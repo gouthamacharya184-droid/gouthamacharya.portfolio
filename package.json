@@ -1,0 +1,12 @@
+{
+  "name": "goutham-portfolio-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "install-deps": "cmd /c \"npm install --prefix backend && npm install --prefix frontend\"",
+    "dev:backend": "cmd /c \"cd backend && npm run dev\"",
+    "dev:frontend": "cmd /c \"cd frontend && npm run dev\"",
+    "build": "cmd /c \"cd frontend && npm run build\"",
+    "start": "cmd /c \"cd backend && npm run start\""
+  }
+}

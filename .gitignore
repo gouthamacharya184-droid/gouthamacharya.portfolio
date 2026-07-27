@@ -1,0 +1,71 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# .gitignore — Goutham Portfolio Monorepo
+# ─────────────────────────────────────────────────────────────────────────────
+
+# ── Secrets & Environment Variables ─────────────────────────────────────────
+# NEVER commit .env files — they contain live API keys and passwords.
+# Use .env.example as a safe template instead.
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+
+# ── Node Modules ─────────────────────────────────────────────────────────────
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# ── Build Artifacts ───────────────────────────────────────────────────────────
+dist/
+frontend/dist/
+build/
+.vite/
+
+# ── Logs & Error Files ────────────────────────────────────────────────────────
+# Log files may contain sensitive internal error messages, stack traces,
+# API keys, or user data. Never commit them.
+*.log
+*.txt
+logs/
+backend/error_log.txt
+backend/test_output.txt
+
+# ── Debug / Test Scripts ──────────────────────────────────────────────────────
+# One-off debug and test scripts should never be committed to the repository.
+# They may contain hardcoded credentials or expose internal API patterns.
+backend/check_names.js
+backend/debug_list.js
+backend/final_test.js
+backend/find_models.js
+backend/list_models.js
+backend/test_endpoint.js
+backend/test_gemini.js
+backend/test_sdk.js
+backend/test_standard.js
+backend/test_v1.js
+
+# ── Data Dumps & Scratch Files ────────────────────────────────────────────────
+backend/models.json
+backend/models_list.json
+backend/payload.json
+backend/scratch/
+scratch/
+
+# ── OS & Editor Files ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+*.suo
+*.user
+
+# ── ngrok ─────────────────────────────────────────────────────────────────────
+ngrok/
+ngrok.zip
+*.ngrok-free.app
+
+# ── Coverage & Test Output ────────────────────────────────────────────────────
+coverage/
+.nyc_output/

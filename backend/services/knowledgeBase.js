@@ -1,0 +1,141 @@
+import { portfolioData } from "../config/portfolio.js";
+
+/**
+ * Knowledge Base & RAG Context Builder for Goutham Acharya's Portfolio AI
+ * 
+ * Formats all structured portfolio data into comprehensive, contextual knowledge blocks.
+ * Dynamically ranks and injects relevant context into the LLM system prompt based on user query.
+ */
+
+function formatProfileContext() {
+  const p = portfolioData.profile || {};
+  return `
+### ABOUT GOUTHAM ACHARYA:
+- Name: ${p.name || "Goutham Acharya"}
+- Title: ${p.title || "AI Engineering & Automation Specialist"}
+- Location: ${p.location || "Udupi, Karnataka, India"}
+- Email: ${p.displayEmail || "gouthamacharya184@gmail.com"}
+- GitHub: ${p.github || "https://github.com/gouthamacharya184-droid"}
+- Summary: ${p.summary || ""}
+- Career Objective: ${p.objective || ""}
+- Bio: ${p.bioParagraph1 || ""} ${p.bioParagraph2 || ""}
+`.trim();
+}
+
+function formatExperienceContext() {
+  const exp = portfolioData.experience || [];
+  if (exp.length === 0) return "";
+  const items = exp.map((e) => `
+- Role: ${e.role} at ${e.company} (${e.period})
+  Description: ${e.description}
+  Key Contributions: ${e.points ? e.points.join("; ") : ""}
+`).join("\n");
+  return `### WORK EXPERIENCE & LEARNING TRACK:\n${items}`.trim();
+}
+
+function formatEducationContext() {
+  const edu = portfolioData.education || [];
+  if (edu.length === 0) return "";
+  const items = edu.map((e) => `- ${e.title} at ${e.institution} (${e.period})`).join("\n");
+  return `### EDUCATION:\n${items}`.trim();
+}
+
+function formatProjectsContext() {
+  const projects = portfolioData.projects || [];
+  if (projects.length === 0) return "";
+  const items = projects.map((p, i) => `
+${i + 1}. **${p.title}**
+   - Tech Stack: ${p.stack ? p.stack.join(", ") : ""}
+   - Description: ${p.description}
+   - Key Achievements: ${p.bullets ? p.bullets.join("; ") : ""}
+   - Impact & Significance: ${p.impact || ""}
+   - GitHub Repository: ${p.links?.github || "https://github.com/gouthamacharya184-droid"}
+`).join("\n");
+  return `### SELECTED PORTFOLIO PROJECTS:\n${items}`.trim();
+}
+
+function formatSkillsContext() {
+  const groups = portfolioData.skillGroups || [];
+  if (groups.length === 0) return "";
+  const items = groups.map((g) => {
+    const list = (g.skills || []).map((s) => `${s.name} (${typeof s.level === 'number' ? s.level + '%' : s.level})`).join(", ");
+    return `- **${g.title}**: ${list}`;
+  }).join("\n");
+  return `### TECHNICAL SKILLS & PROFICIENCY:\n${items}`.trim();
+}
+
+function formatCertificationsAndAchievementsContext() {
+  const certs = portfolioData.certifications || [];
+  const achs = portfolioData.achievements || [];
+  
+  let result = "### CERTIFICATIONS & ACHIEVEMENTS:\n";
+  if (certs.length > 0) {
+    result += "Certifications:\n" + certs.map((c) => `- ${c.title} by ${c.issuer} (${c.year})`).join("\n") + "\n";
+  }
+  if (achs.length > 0) {
+    result += "Achievements:\n" + achs.map((a) => `- ${a.title}: ${a.description}`).join("\n") + "\n";
+  }
+  return result.trim();
+}
+
+function formatBlogTopicsContext() {
+  const blogs = portfolioData.blogTopics || [];
+  if (blogs.length === 0) return "";
+  const items = blogs.map((b) => `- "${b.title}" (${b.status}): ${b.excerpt} [Tags: ${b.tags ? b.tags.join(", ") : ""}]`).join("\n");
+  return `### ACTIVE RESEARCH & UPCOMING WRITING TOPICS:\n${items}`.trim();
+}
+
+function formatSocialContext() {
+  const links = portfolioData.socialLinks || [];
+  const items = links.map((l) => `- ${l.label}: ${l.href}`).join("\n");
+  return `### SOCIAL & CONTACT LINKS:\n- Email: gouthamacharya184@gmail.com\n${items}`.trim();
+}
+
+/**
+ * Builds the complete system prompt including all relevant portfolio knowledge context.
+ */
+export function buildSystemPromptWithContext(userQuery = "", history = []) {
+  const profileCtx = formatProfileContext();
+  const expCtx = formatExperienceContext();
+  const eduCtx = formatEducationContext();
+  const projectsCtx = formatProjectsContext();
+  const skillsCtx = formatSkillsContext();
+  const certsCtx = formatCertificationsAndAchievementsContext();
+  const blogCtx = formatBlogTopicsContext();
+  const socialCtx = formatSocialContext();
+
+  const fullKnowledgeBase = `
+=== GOUTHAM ACHARYA - OFFICIAL KNOWLEDGE BASE ===
+
+${profileCtx}
+
+${skillsCtx}
+
+${projectsCtx}
+
+${expCtx}
+
+${eduCtx}
+
+${certsCtx}
+
+${blogCtx}
+
+${socialCtx}
+
+==================================================
+`;
+
+  return `You are the official AI Portfolio Assistant for Goutham Acharya — an AI Engineer & Automation Specialist based in Udupi, Karnataka, India.
+
+YOUR MANDATE & BEHAVIOR:
+1. Speak knowledgeably, accurately, and professionally about Goutham Acharya's background, skills, projects, education, and career goals based directly on the provided Knowledge Base below.
+2. For questions about Goutham Acharya, ALWAYS draw upon the factual knowledge provided below. Be helpful, articulate, and highlight his expertise in Python, LLM evaluation, RAG pipelines, NLP, and machine learning.
+3. For general technical, programming, AI, or coding questions, provide clear, intelligent, and accurate assistance while keeping answers clear, structured, and easy to understand.
+4. Reply EXCLUSIVELY in English regardless of the user's language input.
+5. Never hallucinate facts about Goutham that contradict the Knowledge Base below.
+6. Format your responses using clean Markdown (bold headings, bullet points, concise code blocks when appropriate).
+
+${fullKnowledgeBase}
+`.trim();
+}
