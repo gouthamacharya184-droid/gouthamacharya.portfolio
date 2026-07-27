@@ -189,3 +189,5 @@ process.on("SIGINT",  () => shutdown("SIGINT"));
 process.on("unhandledRejection", (reason) => {
   logger.error({ type: "unhandled_rejection", reason: String(reason) });
 });
+
+export default app;
