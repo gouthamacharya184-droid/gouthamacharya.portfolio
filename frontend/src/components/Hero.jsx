@@ -176,7 +176,7 @@ export default function Hero() {
               {/* Profile Image container without background frame */}
               <div className="relative">
                 <ProgressiveImage
-                  src="/api/assets/profile.webp"
+                  src="/profile.webp"
                   alt="Goutham Acharya profile photo"
                   loading="eager"
                   className="w-full h-auto max-h-[340px] xs:max-h-[410px] sm:max-h-[480px] md:max-h-[550px] lg:max-h-[530px] object-cover object-top"
