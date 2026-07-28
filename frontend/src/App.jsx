@@ -27,10 +27,10 @@ import Navbar from "./components/Navbar";
 import Projects from "./components/Projects";
 import Skills from "./components/Skills";
 import Timeline from "./components/Timeline";
-import Chatbot from "./components/Chatbot";
 import Blog from "./components/Blog";
 import Testimonials from "./components/Testimonials";
 import ErrorBoundary from "./components/ErrorBoundary";
+import Chatbot from "./components/Chatbot";
 import { ChatProvider } from "./hooks/useChat";
 import NeuralNetworkBackground from "./components/NeuralNetworkBackground";
 
@@ -48,8 +48,8 @@ function Loader() {
         <div className="relative h-14 w-14 xs:h-16 xs:w-16">
           <div className="absolute inset-0 rounded-full border-2 border-white/10" />
           <div className="absolute inset-0 rounded-full border-2 border-t-cyan-400 border-r-transparent border-b-transparent border-l-transparent animate-spin" />
-          <div className="absolute inset-2 rounded-full border border-cyan-400/20 flex items-center justify-center text-cyan-400 font-black text-xs">
-            GA
+          <div className="absolute inset-2 rounded-full border border-cyan-400/20 flex items-center justify-center p-2">
+            <img src="/favicon.png" alt="GA Monogram" className="h-full w-full object-contain" />
           </div>
         </div>
         <p className="text-[10px] xs:text-xs uppercase tracking-[0.4em] text-slate-500 font-medium">

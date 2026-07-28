@@ -20,6 +20,7 @@ const FALLBACK_NAV = [
   { label: "About", href: "#about" },
   { label: "Experience", href: "#experience" },
   { label: "Projects", href: "#projects" },
+  { label: "Skills", href: "#skills" },
   { label: "Blog", href: "#blog" },
   { label: "Contact", href: "#contact" },
 ];
@@ -65,7 +66,7 @@ export default function Navbar() {
     };
 
     // Track intersection sections to update active states dynamically
-    const sections = ["home", "about", "experience", "projects", "blog", "contact"];
+    const sections = ["home", "about", "experience", "projects", "skills", "testimonials", "blog", "contact"];
     const observerOptions = {
       root: null,
       rootMargin: "-45% 0px -45% 0px", // Detect middle-aligned active folds
@@ -156,9 +157,11 @@ export default function Navbar() {
           aria-label="Goutham Acharya — Home"
         >
           <div className="h-10 w-10 xs:h-11 xs:w-11 md:h-12 md:w-12 rounded-xl bg-white/5 border border-cyan-400/25 shadow-[0_0_25px_rgba(34,211,238,0.12)] backdrop-blur-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:border-cyan-400/50 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.25)] shrink-0">
-            <div className="h-6 w-6 xs:h-7 xs:w-7 rounded-lg bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.4),rgba(15,23,42,0.85))] border border-cyan-300/25 flex items-center justify-center text-cyan-300 font-black text-[10px] xs:text-xs tracking-wider">
-              GA
-            </div>
+            <img
+              src="/favicon.png"
+              alt="GA Monogram"
+              className="h-6 w-6 xs:h-7 xs:w-7 object-contain transition-transform group-hover:scale-110"
+            />
           </div>
           <div className="min-w-0">
             <div className="text-sm xs:text-base md:text-lg font-bold tracking-tight text-white group-hover:text-cyan-300 transition-colors truncate leading-tight whitespace-nowrap">

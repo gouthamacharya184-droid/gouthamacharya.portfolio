@@ -38,9 +38,10 @@ export default function Skills() {
       eyebrow="Skills"
       title="Tools and technologies I work with."
       description="A focused set of capabilities around Python, data, and AI/ML systems."
+      className="pb-0 sm:pb-2"
     >
       {/* Fix 9: Tab scroller with right-side fade gradient overflow indicator */}
-      <div className="relative mb-8 xs:mb-10">
+      <div className="relative mb-4 xs:mb-5">
         <div
           className="flex overflow-x-auto overflow-y-hidden pb-4 relative gap-2 snap-x custom-scrollbar"
           role="tablist"
@@ -75,7 +76,7 @@ export default function Skills() {
       </div>
 
       {/* Fix 8: Skills Grid with visual progress bars */}
-      <div className="min-h-[220px] xs:min-h-[260px] sm:min-h-[280px]">
+      <div className="min-h-0">
         <AnimatePresence mode="wait">
           {activeGroup && (
             <motion.div

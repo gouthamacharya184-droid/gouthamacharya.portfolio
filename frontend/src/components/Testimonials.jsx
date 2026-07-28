@@ -32,6 +32,7 @@ export default function Testimonials() {
       eyebrow="Certifications & Achievements"
       title="Credentials that back the work."
       description="Verified certifications and milestones earned through continuous self-study and hands-on project building."
+      className="pt-0 sm:pt-2"
     >
       {/* Certifications grid */}
       <motion.div

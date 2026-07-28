@@ -29,7 +29,7 @@ export const handleContact = async (req, res) => {
     logger.error({ type: "contact_delivery_failed", msg: error.message });
     return res.status(500).json({
       ok: false,
-      message: error.message || "Failed to send email. Please check server SMTP configuration.",
+      message: "Failed to send message. Please try again or reach out directly via email.",
     });
   }
 };
