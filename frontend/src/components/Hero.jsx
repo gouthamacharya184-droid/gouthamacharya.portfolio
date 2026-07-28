@@ -38,9 +38,7 @@ function ParticleCanvas() {
       r: Math.random() * 1.5 + 0.3,
       dx: (Math.random() - 0.5) * 0.25,
       dy: (Math.random() - 0.5) * 0.25,
-      alpha: Math.random() * 0.5 + 0.1,
-      flicker: Math.random() * Math.PI * 2,
-      flickerSpeed: Math.random() * 0.02 + 0.005,
+      alpha: Math.random() * 0.4 + 0.2,
     }));
 
     const draw = () => {
@@ -48,15 +46,13 @@ function ParticleCanvas() {
       for (const p of particles) {
         p.x += p.dx;
         p.y += p.dy;
-        p.flicker += p.flickerSpeed;
         if (p.x < 0) p.x = W;
         if (p.x > W) p.x = 0;
         if (p.y < 0) p.y = H;
         if (p.y > H) p.y = 0;
-        const flickeredAlpha = p.alpha * (0.6 + 0.4 * Math.sin(p.flicker));
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(148, 236, 252, ${flickeredAlpha})`;
+        ctx.fillStyle = `rgba(148, 236, 252, ${p.alpha})`;
         ctx.fill();
       }
       animId = requestAnimationFrame(draw);
