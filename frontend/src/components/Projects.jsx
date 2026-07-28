@@ -89,7 +89,7 @@ export default function Projects() {
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#020817]/80 pointer-events-none z-10" />
                 <div className="relative overflow-hidden border-b border-white/8 bg-[#071225]/60 aspect-video">
                   <div className="absolute inset-0 bg-cyan-500/15 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
-                  <ProgressiveImage src={project.image?.startsWith('/api/uploads/projects/') ? project.image.replace('/api/uploads/projects/', '/projects/') : project.image} alt={project.title} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+                  <ProgressiveImage src={project.image} alt={project.title} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
                   <div className="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="bg-[#010614]/80 backdrop-blur-md p-2 rounded-full border border-white/10 text-cyan-400"><Info size={16} /></div>
                   </div>

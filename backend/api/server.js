@@ -91,9 +91,12 @@ app.use(generalLimiter);
 app.use(compression({ threshold: 1024 }));
 app.use(express.json({ limit: "10kb" }));
 
-// Static Assets & Uploads Serving
-app.use("/api/assets", express.static(path.join(__dirname, "../assets")));
-app.use("/api/uploads", express.static(path.join(__dirname, "../uploads")));
+// Static Assets & Uploads Serving (with caching headers)
+const staticOptions = { maxAge: "1d", etag: true };
+app.use("/api/assets", express.static(path.join(__dirname, "../assets"), staticOptions));
+app.use("/api/uploads", express.static(path.join(__dirname, "../uploads"), staticOptions));
+app.use("/assets", express.static(path.join(__dirname, "../assets"), staticOptions));
+app.use("/uploads", express.static(path.join(__dirname, "../uploads"), staticOptions));
 
 // Public health check
 app.get("/api/health", (_req, res) => {
