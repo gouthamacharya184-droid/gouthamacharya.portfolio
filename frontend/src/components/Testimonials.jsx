@@ -48,7 +48,7 @@ export default function Testimonials() {
             <motion.div
               key={cert.title}
               variants={fadeUp}
-              className={`card-premium group relative rounded-2xl border ${cert.border} bg-white/[0.03] p-5 hover:bg-white/[0.06] transition-all duration-300 flex flex-col gap-3`}
+              className={`card-premium group relative rounded-2xl border ${cert.border} bg-white/[0.03] p-5 hover:bg-white/[0.06] transition-colors duration-300 flex flex-col gap-3`}
             >
               {Icon && (
                 <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${cert.bg} ${cert.border} border ${cert.color} group-hover:scale-110 transition-transform duration-300`}>
@@ -81,7 +81,7 @@ export default function Testimonials() {
             <motion.div
               key={item.title}
               variants={fadeUp}
-              className={`card-premium group relative rounded-2xl border ${item.border} bg-white/[0.03] p-6 hover:bg-white/[0.06] transition-all duration-300 flex gap-4`}
+              className={`card-premium group relative rounded-2xl border ${item.border} bg-white/[0.03] p-6 hover:bg-white/[0.06] transition-colors duration-300 flex gap-4`}
             >
               {Icon && (
                 <div className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${item.bg} ${item.border} border ${item.color} group-hover:scale-110 transition-transform duration-300`}>

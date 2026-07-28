@@ -85,7 +85,7 @@ export default function Projects() {
         {projects.map((project) => (
           <motion.div key={project.title} variants={fadeUp} className="flex">
             <ProjectTiltCard disabled={isTouch}>
-              <article onClick={() => setSelectedProject(project)} className="group relative overflow-hidden rounded-2xl xs:rounded-[2rem] border border-cyan-400/10 bg-white/[0.04] transition-all duration-300 hover:bg-white/[0.07] hover:shadow-[0_0_40px_rgba(34,211,238,0.12)] hover:border-cyan-400/25 h-full flex flex-col">
+              <article onClick={() => setSelectedProject(project)} className="group relative overflow-hidden rounded-2xl xs:rounded-[2rem] border border-cyan-400/10 bg-white/[0.04] transition-colors duration-300 hover:bg-white/[0.07] hover:shadow-[0_0_40px_rgba(34,211,238,0.12)] hover:border-cyan-400/25 h-full flex flex-col">
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#020817]/80 pointer-events-none z-10" />
                 <div className="relative overflow-hidden border-b border-white/8 bg-[#071225]/60 aspect-video">
                   <div className="absolute inset-0 bg-cyan-500/15 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />

@@ -90,10 +90,10 @@ export default function Skills() {
               {activeGroup.skills.map((skill) => (
                 <div
                   key={skill.name}
-                  className="flex flex-col gap-3 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-all duration-300 group"
+                  className="flex flex-col gap-3 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-colors duration-300 group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 border border-white/10 group-hover:scale-105 group-hover:border-cyan-400/35 group-hover:shadow-[0_0_15px_rgba(34,211,238,0.1)] transition-all duration-300">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 border border-white/10 group-hover:scale-105 group-hover:border-cyan-400/35 group-hover:shadow-[0_0_15px_rgba(34,211,238,0.1)] transition-transform transition-colors duration-300">
                       <span className="text-[10px] font-bold text-slate-400 group-hover:text-cyan-400 transition-colors">
                         {skill.name.substring(0, 2).toUpperCase()}
                       </span>
@@ -115,7 +115,7 @@ export default function Skills() {
                         whileInView={{ width: `${skill.level}%` }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-                        className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-cyan-400 group-hover:from-cyan-400 group-hover:to-violet-400 transition-all duration-500"
+                        className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-cyan-400 group-hover:from-cyan-400 group-hover:to-violet-400 transition-colors duration-500"
                       />
                     </div>
                   )}

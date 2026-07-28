@@ -31,7 +31,7 @@ function InteractiveCard({ title, text, icon: Icon }) {
     <motion.div
       variants={fadeUp}
       onMouseMove={handleMouseMove}
-      className="group relative overflow-hidden rounded-2xl border border-white/8 bg-white/[0.03] p-5 xs:p-6 transition-all duration-300 hover:bg-white/[0.07] hover:border-cyan-400/20 hover:shadow-[0_0_30px_rgba(34,211,238,0.08)]"
+      className="group relative overflow-hidden rounded-2xl border border-white/8 bg-white/[0.03] p-5 xs:p-6 transition-colors duration-300 hover:bg-white/[0.07] hover:border-cyan-400/20 hover:shadow-[0_0_30px_rgba(34,211,238,0.08)]"
     >
       <motion.div
         className="pointer-events-none absolute -inset-px opacity-0 transition duration-300 group-hover:opacity-100 rounded-2xl"
