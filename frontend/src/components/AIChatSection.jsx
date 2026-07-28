@@ -300,15 +300,15 @@ export default function AIChatSection() {
               <div>
                 <div className="flex items-center gap-1.5">
                   <h3 className="text-sm font-bold text-white tracking-tight">AI Assistant</h3>
-                  <Sparkles size={12} className="text-cyan-400 animate-pulse" />
+                  <Sparkles size={12} className="text-cyan-400" />
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className={`inline-block h-2 w-2 rounded-full ${
                     aiStatus === 'online'
-                      ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)] animate-pulse'
+                      ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]'
                       : aiStatus === 'offline'
                         ? 'bg-rose-500'
-                        : 'bg-amber-400 animate-pulse'
+                        : 'bg-amber-400'
                   }`} />
                   <span className="text-[9px] uppercase tracking-wider font-bold text-slate-500">
                     {aiStatus === 'online' ? 'Connected' : aiStatus === 'offline' ? 'Offline' : 'Connecting…'}

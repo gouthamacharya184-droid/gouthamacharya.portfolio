@@ -166,7 +166,7 @@ export default function Hero() {
               className="relative w-full max-w-[250px] xxs:max-w-[270px] xs:max-w-[320px] sm:max-w-[390px] md:max-w-[440px] lg:max-w-[440px] xl:max-w-[490px] mx-auto lg:mx-0 group cursor-default"
             >
               {/* Glow effects — reduced on mobile */}
-              <div className="absolute -inset-4 sm:-inset-6 bg-[radial-gradient(circle,rgba(14,165,233,0.2),transparent_65%)] blur-2xl sm:blur-3xl pointer-events-none animate-pulse-slow" />
+              <div className="absolute -inset-4 sm:-inset-6 bg-[radial-gradient(circle,rgba(14,165,233,0.2),transparent_65%)] blur-2xl sm:blur-3xl pointer-events-none opacity-80" />
               <div className="hidden sm:block absolute -inset-10 bg-[radial-gradient(circle,rgba(168,85,247,0.12),transparent_60%)] blur-3xl pointer-events-none mix-blend-screen" />
 
               {/* Profile Image container without background frame */}
@@ -197,7 +197,7 @@ export default function Hero() {
               className="inline-flex items-center gap-2 px-3 xs:px-4 py-1.5 xs:py-2 rounded-full border border-cyan-400/20 bg-[#071225]/70 shadow-[0_0_30px_rgba(14,165,233,0.08)] backdrop-blur-md mb-4 xs:mb-5 sm:mb-6"
             >
               <div className="flex items-center gap-1.5 text-cyan-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.9)] animate-pulse shrink-0" />
+                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.9)] shrink-0" />
                 <Sparkles size={11} />
               </div>
               <span className="text-cyan-200 tracking-[0.12em] text-[9px] xs:text-[10px] sm:text-[11px] uppercase font-semibold">
@@ -226,7 +226,7 @@ export default function Hero() {
               <div className="flex items-center gap-2 px-3 xs:px-4 py-2 rounded-full border border-violet-400/15 bg-[#071225]/85 backdrop-blur-lg text-xs sm:text-sm text-slate-200 shadow-[0_0_20px_rgba(139,92,246,0.08)] max-w-full overflow-hidden">
                 <Cpu size={13} className="text-violet-400 shrink-0" />
                 <span className="truncate max-w-[200px] xs:max-w-[220px] sm:max-w-none inline-block">{currentText}</span>
-                <span className="w-0.5 h-4 bg-cyan-400 animate-pulse shrink-0 ml-0.5" aria-hidden="true" />
+                <span className="w-0.5 h-4 bg-cyan-400 shrink-0 ml-0.5" aria-hidden="true" />
               </div>
             </motion.div>
 

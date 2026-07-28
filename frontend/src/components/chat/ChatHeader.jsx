@@ -12,7 +12,7 @@ function StatusDot({ status }) {
     checking: 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]',
   };
   return (
-    <span className={`inline-block rounded-full h-2 w-2 ${colors[status] ?? colors.checking} ${status !== 'offline' ? 'animate-pulse' : ''}`} />
+    <span className={`inline-block rounded-full h-2 w-2 ${colors[status] ?? colors.checking}`} />
   );
 }
 

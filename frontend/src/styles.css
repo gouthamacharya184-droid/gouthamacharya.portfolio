@@ -145,38 +145,12 @@ h6 {
   animation: shimmer-text 5s linear infinite;
 }
 
-/* ── Pulse glow ───────────────────────────────────────────── */
-@keyframes pulse-glow {
-
-  0%,
-  100% {
-    box-shadow: 0 0 15px rgba(34, 211, 238, 0.15);
-  }
-
-  50% {
-    box-shadow: 0 0 35px rgba(34, 211, 238, 0.4), 0 0 60px rgba(34, 211, 238, 0.15);
-  }
-}
-
 .animate-pulse-glow {
-  animation: pulse-glow 3s ease-in-out infinite;
-}
-
-/* ── Pulse slow (glow bg) ─────────────────────────────────── */
-@keyframes pulse-slow {
-
-  0%,
-  100% {
-    opacity: 0.6;
-  }
-
-  50% {
-    opacity: 1;
-  }
+  box-shadow: 0 0 25px rgba(34, 211, 238, 0.25);
 }
 
 .animate-pulse-slow {
-  animation: pulse-slow 4s ease-in-out infinite;
+  opacity: 0.8;
 }
 
 /* ── Progress bar (scroll indicator) ─────────────────────── */
