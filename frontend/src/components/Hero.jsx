@@ -278,19 +278,19 @@ export default function Hero() {
                 href={profile.github}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#071225]/90 px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm text-slate-300 hover:border-cyan-400/30 hover:text-white transition-all duration-200 min-h-[48px] w-full sm:w-auto"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#071225]/90 px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm text-slate-300 hover:border-cyan-400/30 hover:text-white transition-colors duration-200 min-h-[48px] w-full sm:w-auto"
               >
                 <Github size={15} /> GitHub
               </a>
               <a
                 href="/api/social/call"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#071225]/90 px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm text-slate-300 hover:border-cyan-400/30 hover:text-white transition-all duration-200 min-h-[48px] w-full sm:w-auto"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#071225]/90 px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm text-slate-300 hover:border-cyan-400/30 hover:text-white transition-colors duration-200 min-h-[48px] w-full sm:w-auto"
               >
                 <Phone size={15} /> Call
               </a>
               <a
                 href="#contact"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#071225]/90 px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm text-slate-300 hover:border-cyan-400/30 hover:text-white transition-all duration-200 min-h-[48px] w-full sm:w-auto"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#071225]/90 px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm text-slate-300 hover:border-cyan-400/30 hover:text-white transition-colors duration-200 min-h-[48px] w-full sm:w-auto"
               >
                 <MessageCircle size={15} /> Contact Me
               </a>

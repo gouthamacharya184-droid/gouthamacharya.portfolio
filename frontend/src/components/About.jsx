@@ -10,7 +10,7 @@
  *  - Memoized icon resolutions are resolved using helper context maps.
  */
 
-import { motion, useMotionValue } from "framer-motion";
+import { motion, useMotionValue, useMotionTemplate } from "framer-motion";
 import { useMemo } from "react";
 import Section from "./Section";
 import { fadeUp, stagger } from "../utils/motion";
@@ -20,6 +20,7 @@ import DataSkeleton, { DataError } from "./DataSkeleton";
 function InteractiveCard({ title, text, icon: Icon }) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
+  const background = useMotionTemplate`radial-gradient(300px circle at ${x}px ${y}px, rgba(34,211,238,0.08), transparent 50%)`;
 
   const handleMouseMove = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -35,9 +36,7 @@ function InteractiveCard({ title, text, icon: Icon }) {
     >
       <motion.div
         className="pointer-events-none absolute -inset-px opacity-0 transition duration-300 group-hover:opacity-100 rounded-2xl"
-        style={{
-          background: `radial-gradient(300px circle at ${x}px ${y}px, rgba(34,211,238,0.08), transparent 50%)`,
-        }}
+        style={{ background }}
       />
       {Icon && (
         <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/20 to-cyan-500/5 text-cyan-300 shadow-inner group-hover:scale-110 transition-transform duration-300 mb-4">
@@ -99,7 +98,7 @@ export default function About() {
           <motion.div
             key={label}
             variants={fadeUp}
-            className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3.5 hover:bg-white/[0.06] hover:border-cyan-400/15 transition-all duration-300 group"
+            className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3.5 hover:bg-white/[0.06] hover:border-cyan-400/15 transition-colors duration-300 group"
           >
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-500/10 border border-cyan-500/15 text-cyan-400 group-hover:scale-110 transition-transform duration-300">
               {IconComponent && <IconComponent size={17} strokeWidth={1.8} />}
