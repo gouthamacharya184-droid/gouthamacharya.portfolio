@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "node -e \"const fs=require('fs'),{execSync}=require('child_process'); if(fs.existsSync('frontend/package.json')){ execSync('npm install --prefix frontend && npm --prefix frontend run build',{stdio:'inherit'}); } else { execSync('npm run build',{stdio:'inherit'}); }\"",
+  "buildCommand": "npm run build",
   "outputDirectory": "frontend/dist",
   "rewrites": [
     {
