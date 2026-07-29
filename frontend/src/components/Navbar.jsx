@@ -156,9 +156,9 @@ export default function Navbar() {
           onClick={(e) => handleNavClick(e, "#home")}
           aria-label="Goutham Acharya — Home"
         >
-          <div className="h-10 w-10 xs:h-11 xs:w-11 md:h-12 md:w-12 rounded-xl bg-white/5 border border-cyan-400/25 shadow-[0_0_25px_rgba(34,211,238,0.12)] backdrop-blur-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:border-cyan-400/50 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.25)] shrink-0">
+          <div className="h-10 w-10 xs:h-11 xs:w-11 rounded-xl bg-white/5 border border-cyan-400/25 shadow-[0_0_25px_rgba(34,211,238,0.12)] backdrop-blur-xl flex items-center justify-center p-2 transition-all duration-300 group-hover:scale-105 group-hover:border-cyan-400/50 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.25)] shrink-0">
             <img
-              src="/favicon.png"
+              src="/favicon.png?v=4"
               alt="GA Monogram"
               className="h-6 w-6 xs:h-7 xs:w-7 object-contain transition-transform group-hover:scale-110"
             />

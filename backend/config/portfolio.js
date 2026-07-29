@@ -65,7 +65,7 @@ export const portfolioData = {
   projects: [
     {
       title: "LLM Hallucination Detection",
-      image: "/api/uploads/projects/hallucination.webp",
+      image: "/api/assets/hallucination.webp",
       stack: ["Python", "Excel", "LLM Evaluation", "Prompt Analysis"],
       description:
         "Compared outputs from multiple LLMs using identical queries, organized response data, and created a simple scoring system to identify inconsistencies and hallucinated answers.",
@@ -79,7 +79,7 @@ export const portfolioData = {
     },
     {
       title: "Data Analysis using Python",
-      image: "/api/uploads/projects/data-analysis.webp",
+      image: "/api/assets/data-analysis.webp",
       stack: ["Python", "Pandas", "Matplotlib", "EDA"],
       description:
         "Cleaned and analyzed structured datasets, surfaced patterns through exploratory analysis, and visualized trends for clearer decision-making.",
@@ -93,7 +93,7 @@ export const portfolioData = {
     },
     {
       title: "Legal AI Assistant",
-      image: "/api/uploads/projects/legal-ai.webp",
+      image: "/api/assets/legal-ai.webp",
       stack: ["Gemini", "JSON", "Prompt Engineering", "RAG"],
       description:
         "Built a legal-information chatbot workflow, analyzed model responses for quality issues, and improved accuracy with prompt iteration and context-aware retrieval.",

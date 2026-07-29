@@ -32,7 +32,7 @@ app.use(
         defaultSrc:  ["'self'"],
         scriptSrc:   ["'none'"],
         styleSrc:    ["'none'"],
-        imgSrc:      ["'none'"],
+        imgSrc:      ["'self'", "data:", "blob:"],
         connectSrc:  ["'self'"],
         frameAncestors: ["'none'"],
         baseUri:     ["'self'"],
@@ -47,8 +47,7 @@ app.use(
     noSniff: true,
     frameguard: { action: "deny" },
     referrerPolicy: { policy: "strict-origin-when-cross-origin" },
-    // Fix 4: Explicit CORP + COOP for production-grade isolation
-    crossOriginResourcePolicy: { policy: "same-site" },
+    crossOriginResourcePolicy: { policy: "cross-origin" },
     crossOriginOpenerPolicy:   { policy: "same-origin" },
   })
 );

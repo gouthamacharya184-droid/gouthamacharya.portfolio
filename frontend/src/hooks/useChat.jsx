@@ -318,10 +318,10 @@ export function ChatProvider({ children, apiBaseUrl }) {
 
       setIsTyping(false);
       let errMsg = '';
-      if (err.message === 'RATE_LIMITED')         errMsg = "⚠️ You're sending messages too fast. Please wait a moment.";
-      else if (err.message === 'MAINTENANCE')      errMsg = '🔧 The AI assistant is temporarily offline. Please check back later.';
-      else if (err.message === 'INVALID_REQUEST')  errMsg = '⚠️ Message validation failed. Please check your message length.';
-      else                                         errMsg = '⚠️ Unable to connect to AI assistant. Please try again.';
+      if (err.message === 'RATE_LIMITED') errMsg = "⚠️ You're sending messages too fast. Please wait a moment.";
+      else if (err.message === 'MAINTENANCE') errMsg = '🔧 The AI assistant is temporarily offline. Please check back later.';
+      else if (err.message === 'INVALID_REQUEST') errMsg = '⚠️ Message validation failed. Please check your message length.';
+      else errMsg = '⚠️ Unable to connect to AI assistant. Please try again.';
 
       addLog('error', `API failure: ${err.message}`);
 
@@ -340,8 +340,8 @@ export function ChatProvider({ children, apiBaseUrl }) {
       setIsTyping(false);
       activeAbortControllerRef.current = null;
     }
-  // `isTyping` removed from deps — handleSend was being recreated on every
-  // typing state change. isSendingRef guards against double-sends instead.
+    // `isTyping` removed from deps — handleSend was being recreated on every
+    // typing state change. isSendingRef guards against double-sends instead.
   }, [baseUrl, activeSessionId, extractArtifact, addLog]);
 
   // Clean up any pending abort controllers on unmount

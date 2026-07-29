@@ -49,7 +49,7 @@ function Loader() {
           <div className="absolute inset-0 rounded-full border-2 border-white/10" />
           <div className="absolute inset-0 rounded-full border-2 border-t-cyan-400 border-r-transparent border-b-transparent border-l-transparent animate-spin" />
           <div className="absolute inset-2 rounded-full border border-cyan-400/20 flex items-center justify-center p-2">
-            <img src="/favicon.png" alt="GA Monogram" className="h-full w-full object-contain" />
+            <img src="/api/assets/favicon.png" alt="GA Monogram" className="h-full w-full object-contain" />
           </div>
         </div>
         <p className="text-[10px] xs:text-xs uppercase tracking-[0.4em] text-slate-500 font-medium">

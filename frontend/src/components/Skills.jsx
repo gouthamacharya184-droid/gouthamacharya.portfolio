@@ -9,19 +9,25 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import Section from "./Section";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePortfolio, resolveIcon } from "../hooks/usePortfolio";
 import DataSkeleton from "./DataSkeleton";
 
 export default function Skills() {
   const { portfolio, loading } = usePortfolio();
 
-  // Fix 7: useState MUST be called unconditionally before any early return
   const skillGroups = (portfolio?.skillGroups ?? []).map((g) => ({
     ...g,
     IconComponent: resolveIcon(g.icon),
   }));
-  const [activeTab, setActiveTab] = useState(skillGroups[0]?.title ?? "");
+  const [activeTab, setActiveTab] = useState("");
+
+  // Sync activeTab when portfolio data arrives
+  useEffect(() => {
+    if (!activeTab && skillGroups.length > 0) {
+      setActiveTab(skillGroups[0].title);
+    }
+  }, [skillGroups, activeTab]);
 
   if (loading) return (
     <Section id="skills" eyebrow="Skills" title="Tools and technologies I work with." description="">
@@ -29,8 +35,8 @@ export default function Skills() {
     </Section>
   );
 
-  const activeGroup = skillGroups.find((g) => g.title === activeTab)
-    ?? skillGroups[0];
+  const currentTab = activeTab || (skillGroups[0]?.title ?? "");
+  const activeGroup = skillGroups.find((g) => g.title === currentTab) ?? skillGroups[0];
 
   return (
     <Section
@@ -40,30 +46,31 @@ export default function Skills() {
       description="A focused set of capabilities around Python, data, and AI/ML systems."
       className="pb-0 sm:pb-2"
     >
-      {/* Fix 9: Tab scroller with right-side fade gradient overflow indicator */}
-      <div className="relative mb-4 xs:mb-5">
+      {/* Tab scroller */}
+      <div className="relative mb-6">
         <div
-          className="flex overflow-x-auto overflow-y-hidden pb-4 relative gap-2 snap-x custom-scrollbar"
+          className="flex overflow-x-auto overflow-y-hidden pb-3 gap-2 snap-x touch-pan-x no-scrollbar"
           role="tablist"
         >
           {skillGroups.map((group) => {
-            const isActive = activeTab === group.title;
+            const isActive = currentTab === group.title;
             return (
               <button
                 key={group.title}
                 role="tab"
                 aria-selected={isActive}
                 onClick={() => setActiveTab(group.title)}
-                className={`relative flex items-center px-4 py-2.5 rounded-xl text-xs xs:text-sm font-semibold transition-colors duration-200 snap-start whitespace-nowrap shrink-0 min-h-[44px] cursor-pointer ${isActive
-                    ? "text-cyan-400 bg-cyan-950/20 border border-cyan-500/25"
-                    : "text-slate-400 border border-transparent hover:text-slate-200 hover:bg-white/5"
-                  }`}
+                className={`relative flex items-center px-4 py-2.5 rounded-xl text-xs xs:text-sm font-semibold transition-colors duration-200 snap-start whitespace-nowrap shrink-0 min-h-[44px] cursor-pointer ${
+                  isActive
+                    ? "text-cyan-400 bg-cyan-950/30 border border-cyan-500/30"
+                    : "text-slate-400 border border-white/5 hover:text-slate-200 hover:bg-white/5"
+                }`}
               >
                 {group.title}
                 {isActive && (
                   <motion.span
                     layoutId="active-skill-tab"
-                    className="absolute inset-0 rounded-xl bg-cyan-400/5 border border-cyan-400/20 pointer-events-none"
+                    className="absolute inset-0 rounded-xl bg-cyan-400/10 border border-cyan-400/30 pointer-events-none"
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
                   />
                 )}
@@ -71,11 +78,9 @@ export default function Skills() {
             );
           })}
         </div>
-        {/* Fade gradient — hints at overflow content to the right */}
-        <div className="pointer-events-none absolute top-0 right-0 h-full w-12 bg-gradient-to-l from-[#010614] to-transparent" />
       </div>
 
-      {/* Fix 8: Skills Grid with visual progress bars */}
+      {/* Skills Grid */}
       <div className="min-h-0">
         <AnimatePresence mode="wait">
           {activeGroup && (
@@ -85,21 +90,21 @@ export default function Skills() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.25 }}
-              className="grid gap-4 xxs:gap-5 xs:gap-6 grid-cols-1 xxs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+              className="grid gap-3 xs:gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
             >
               {activeGroup.skills.map((skill) => (
                 <div
                   key={skill.name}
-                  className="flex flex-col gap-3 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-white/10 transition-colors duration-300 group"
+                  className="flex flex-col gap-3 p-4 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] hover:border-cyan-400/20 transition-all duration-300 group"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900 border border-white/10 group-hover:scale-105 group-hover:border-cyan-400/35 group-hover:shadow-[0_0_15px_rgba(34,211,238,0.1)] transition-transform transition-colors duration-300">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900/80 border border-white/10 group-hover:scale-105 group-hover:border-cyan-400/35 group-hover:shadow-[0_0_15px_rgba(34,211,238,0.1)] transition-all duration-300">
                       <span className="text-[10px] font-bold text-slate-400 group-hover:text-cyan-400 transition-colors">
                         {skill.name.substring(0, 2).toUpperCase()}
                       </span>
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-white truncate">{skill.name}</p>
+                      <p className="text-xs xs:text-sm font-semibold text-white truncate">{skill.name}</p>
                       <p className="text-[10px] text-slate-500 truncate mt-0.5">
                         {typeof skill.level === "number"
                           ? skill.level >= 85 ? "Expert" : skill.level >= 70 ? "Proficient" : "Familiar"
@@ -107,9 +112,9 @@ export default function Skills() {
                       </p>
                     </div>
                   </div>
-                  {/* Fix 8: Visual progress bar using skill.level numeric value */}
+                  {/* Visual progress bar */}
                   {typeof skill.level === "number" && (
-                    <div className="h-1 w-full rounded-full bg-white/5 overflow-hidden">
+                    <div className="h-1.5 w-full rounded-full bg-white/5 overflow-hidden">
                       <motion.div
                         initial={{ width: 0 }}
                         whileInView={{ width: `${skill.level}%` }}

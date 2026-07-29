@@ -36,10 +36,12 @@ export default function Footer({ apiBaseUrl }) {
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             aria-label="Goutham Acharya — back to top"
           >
-            <div className="h-10 w-10 rounded-xl bg-white/5 border border-cyan-400/20 shadow-[0_0_20px_rgba(34,211,238,0.1)] flex items-center justify-center transition-all group-hover:scale-105 group-hover:border-cyan-400/40">
-              <div className="h-6 w-6 rounded-lg bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.35),rgba(15,23,42,0.8))] border border-cyan-300/20 flex items-center justify-center text-cyan-300 font-black text-[10px]">
-                GA
-              </div>
+            <div className="h-10 w-10 rounded-xl bg-white/5 border border-cyan-400/20 shadow-[0_0_20px_rgba(34,211,238,0.1)] flex items-center justify-center p-1 transition-all group-hover:scale-105 group-hover:border-cyan-400/40">
+              <img
+                src="/logo.png?v=1"
+                alt="GA Monogram"
+                className="h-8 w-8 object-contain transition-transform group-hover:scale-110"
+              />
             </div>
             <div>
               <div className="text-base font-bold tracking-tight text-white group-hover:text-cyan-300 transition-colors">
