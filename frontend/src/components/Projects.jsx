@@ -61,7 +61,7 @@ function ProjectTiltCard({ children, disabled }) {
 }
 
 export default function Projects() {
-  const { portfolio, loading } = usePortfolio();
+  const { portfolio, loading, getAssetUrl } = usePortfolio();
   const [selectedProject, setSelectedProject] = useState(null);
   const isTouch = typeof window !== "undefined" && window.matchMedia("(hover: none)").matches;
 
@@ -89,7 +89,7 @@ export default function Projects() {
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#020817]/80 pointer-events-none z-10" />
                 <div className="relative overflow-hidden border-b border-white/8 bg-[#071225]/60 aspect-video">
                   <div className="absolute inset-0 bg-cyan-500/15 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10" />
-                  <ProgressiveImage src={project.image} alt={project.title} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+                  <ProgressiveImage src={getAssetUrl(project.image)} alt={project.title} className="h-full w-full object-cover transition duration-700 group-hover:scale-105" />
                   <div className="absolute top-3 right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="bg-[#010614]/80 backdrop-blur-md p-2 rounded-full border border-white/10 text-cyan-400"><Info size={16} /></div>
                   </div>
@@ -123,7 +123,7 @@ export default function Projects() {
           <div className="grid gap-6 xs:gap-8 md:gap-10 grid-cols-1 md:grid-cols-[0.45fr_0.55fr]">
             <div className="space-y-5 xs:space-y-6">
               <div className="rounded-xl xs:rounded-2xl overflow-hidden border border-white/10 bg-slate-900 shadow-xl">
-                <ProgressiveImage src={selectedProject.image} alt={selectedProject.title} className="w-full h-auto aspect-video" />
+                <ProgressiveImage src={getAssetUrl(selectedProject.image)} alt={selectedProject.title} className="w-full h-auto aspect-video" />
               </div>
               <div className="space-y-3">
                 <h4 className="text-[10px] xs:text-xs uppercase tracking-[0.2em] text-slate-500 font-bold">Technologies</h4>

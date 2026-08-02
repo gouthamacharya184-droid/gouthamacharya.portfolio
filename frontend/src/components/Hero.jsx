@@ -134,11 +134,11 @@ function useTypewriter(words) {
   return displayed;
 }
 
-export default function Hero({ apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "" }) {
-  const { portfolio } = usePortfolio();
+export default function Hero({ apiBaseUrl = "" }) {
+  const { portfolio, getAssetUrl, apiBaseUrl: contextApiBaseUrl } = usePortfolio();
   const profile = portfolio?.profile ?? { name: "Goutham Acharya", location: "", github: "#" };
   const currentText = useTypewriter(typewriterWords);
-  const backendUrl = apiBaseUrl.replace(/\/$/, "");
+  const backendUrl = (apiBaseUrl || contextApiBaseUrl || "").replace(/\/$/, "");
 
   return (
     <>
@@ -173,7 +173,7 @@ export default function Hero({ apiBaseUrl = import.meta.env.VITE_API_BASE_URL ??
               {/* Profile Image container without background frame */}
               <div className="relative">
                 <ProgressiveImage
-                  src={`${backendUrl}/api/assets/profile.webp`}
+                  src={getAssetUrl("/api/assets/profile.webp")}
                   alt="Goutham Acharya profile photo"
                   loading="eager"
                   className="w-full h-auto max-h-[340px] xs:max-h-[410px] sm:max-h-[480px] md:max-h-[550px] lg:max-h-[530px] object-cover object-top"

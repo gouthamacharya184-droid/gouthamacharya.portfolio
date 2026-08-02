@@ -71,9 +71,18 @@ export default function App() {
   );
   const rafRef = useRef(null);
 
-  // Derive the API base URL once.
+  // Derive the API base URL with production fallback.
   const apiBaseUrl = useMemo(() => {
-    return import.meta.env.VITE_API_BASE_URL ?? "";
+    if (import.meta.env.VITE_API_BASE_URL) {
+      return import.meta.env.VITE_API_BASE_URL;
+    }
+    if (typeof window !== "undefined") {
+      const host = window.location.hostname;
+      if (host !== "localhost" && host !== "127.0.0.1" && !host.startsWith("192.168.")) {
+        return "https://goutham-portfolio-backend.onrender.com";
+      }
+    }
+    return "";
   }, []);
 
   useEffect(() => {
