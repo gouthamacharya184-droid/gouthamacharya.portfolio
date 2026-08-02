@@ -27,7 +27,11 @@ function deriveSessionTitle(messages) {
 const INITIAL_SESSION = makeSession('New Chat');
 
 export function ChatProvider({ children, apiBaseUrl }) {
-  const baseUrl = (apiBaseUrl || '').replace(/\/$/, '') || window.location.origin;
+  // In production, apiBaseUrl = VITE_API_BASE_URL (Render URL).
+  // In development, apiBaseUrl = "" and Vite proxy handles /api/* routes.
+  // NEVER fall back to window.location.origin — that would send API calls
+  // to the frontend (Vercel) domain instead of the backend (Render) domain.
+  const baseUrl = (apiBaseUrl ?? "").replace(/\/$/, "");
 
   const [sessions, setSessions] = useState([INITIAL_SESSION]);
   const [activeSessionId, setActiveSessionId] = useState(INITIAL_SESSION.id);

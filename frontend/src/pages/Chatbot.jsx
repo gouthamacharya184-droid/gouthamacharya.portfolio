@@ -25,7 +25,11 @@ function savePrefs(prefs) {
 }
 
 export default function ChatbotPage({ apiBaseUrl }) {
-  const defaultBaseUrl = (apiBaseUrl || '').replace(/\/$/, '') || window.location.origin;
+  // In production: apiBaseUrl = VITE_API_BASE_URL (the Render backend URL).
+  // In development: apiBaseUrl = "" and Vite proxy handles /api/* routes.
+  // NEVER fall back to window.location.origin (Vercel domain) — that would
+  // route API calls to the frontend host instead of the backend.
+  const defaultBaseUrl = (apiBaseUrl ?? "").replace(/\/$/, "");
   const [preferences, setPreferences] = useState(() => loadPrefs(defaultBaseUrl));
 
   const baseUrl = preferences.baseUrl;

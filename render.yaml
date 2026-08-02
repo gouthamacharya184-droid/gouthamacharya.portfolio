@@ -1,6 +1,15 @@
 services:
   - type: web
-    name: goutham-portfolio
+    name: goutham-portfolio-backend
     env: node
-    buildCommand: npm run build
-    startCommand: npm run start
+    region: oregon
+    plan: free
+    rootDir: .
+    buildCommand: npm install --prefix backend && npm install --prefix frontend && npm --prefix frontend run build
+    startCommand: npm --prefix backend run start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000

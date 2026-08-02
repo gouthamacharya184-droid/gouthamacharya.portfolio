@@ -21,6 +21,12 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Trust the first proxy (Render, Vercel, ngrok, etc.) so that:
+// 1. Rate limiters read the real client IP from X-Forwarded-For
+// 2. req.secure reflects HTTPS correctly
+// 3. req.ip returns the actual visitor IP, not the load-balancer IP
+app.set("trust proxy", 1);
+
 app.locals.isMaintenanceMode = false;
 
 app.disable("x-powered-by");
@@ -78,10 +84,15 @@ const isOriginAllowed = (origin) => {
 app.use((req, res, next) => {
   const origin = req.headers.origin;
 
+  // Always send Vary: Origin so CDNs/proxies don't serve a cached CORS
+  // response for one origin to a different origin
+  res.setHeader("Vary", "Origin");
+
   if (isOriginAllowed(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin || "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key, Accept");
+    res.setHeader("Access-Control-Max-Age", "86400"); // Cache preflight for 24h
   }
 
   if (req.method === "OPTIONS") {
