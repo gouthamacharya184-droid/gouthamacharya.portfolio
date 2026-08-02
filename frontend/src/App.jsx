@@ -79,7 +79,7 @@ export default function App() {
     if (typeof window !== "undefined") {
       const host = window.location.hostname;
       if (host !== "localhost" && host !== "127.0.0.1" && !host.startsWith("192.168.")) {
-        return "https://goutham-portfolio-backend.onrender.com";
+        return "https://goutham-portfolio.onrender.com";
       }
     }
     return "";

@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: goutham-portfolio-backend
+    name: goutham-portfolio
     env: node
     region: oregon
     plan: free

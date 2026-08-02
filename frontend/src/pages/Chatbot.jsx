@@ -15,7 +15,11 @@ const PREF_KEY = 'portfolio_prefs_v1';
 function loadPrefs(defaultBaseUrl) {
   try {
     const raw = localStorage.getItem(PREF_KEY);
-    if (raw) return { baseUrl: defaultBaseUrl, speechRate: 1.0, ...JSON.parse(raw) };
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      delete parsed.baseUrl;
+      return { baseUrl: defaultBaseUrl, speechRate: 1.0, ...parsed };
+    }
   } catch { /* ignore */ }
   return { baseUrl: defaultBaseUrl, speechRate: 1.0 };
 }
@@ -31,6 +35,12 @@ export default function ChatbotPage({ apiBaseUrl }) {
   // route API calls to the frontend host instead of the backend.
   const defaultBaseUrl = (apiBaseUrl ?? "").replace(/\/$/, "");
   const [preferences, setPreferences] = useState(() => loadPrefs(defaultBaseUrl));
+
+  useEffect(() => {
+    if (defaultBaseUrl && preferences.baseUrl !== defaultBaseUrl) {
+      setPreferences(prev => ({ ...prev, baseUrl: defaultBaseUrl }));
+    }
+  }, [defaultBaseUrl]);
 
   const baseUrl = preferences.baseUrl;
   const speechRate = preferences.speechRate;
