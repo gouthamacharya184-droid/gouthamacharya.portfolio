@@ -134,10 +134,11 @@ function useTypewriter(words) {
   return displayed;
 }
 
-export default function Hero() {
+export default function Hero({ apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "" }) {
   const { portfolio } = usePortfolio();
   const profile = portfolio?.profile ?? { name: "Goutham Acharya", location: "", github: "#" };
   const currentText = useTypewriter(typewriterWords);
+  const backendUrl = apiBaseUrl.replace(/\/$/, "");
 
   return (
     <>
@@ -172,7 +173,7 @@ export default function Hero() {
               {/* Profile Image container without background frame */}
               <div className="relative">
                 <ProgressiveImage
-                  src="/api/assets/profile.webp"
+                  src={`${backendUrl}/api/assets/profile.webp`}
                   alt="Goutham Acharya profile photo"
                   loading="eager"
                   className="w-full h-auto max-h-[340px] xs:max-h-[410px] sm:max-h-[480px] md:max-h-[550px] lg:max-h-[530px] object-cover object-top"
@@ -258,7 +259,7 @@ export default function Hero() {
                 View My Work <ArrowDown size={15} strokeWidth={2.5} />
               </a>
               <a
-                href="/api/uploads/resume.pdf"
+                href={`${backendUrl}/api/uploads/resume.pdf`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md px-5 xs:px-6 py-3 xs:py-3.5 text-sm font-semibold text-slate-200 hover:bg-white/10 hover:border-cyan-400/35 hover:text-cyan-300 hover:shadow-[0_0_20px_rgba(34,211,238,0.15)] transition-all duration-200 min-h-[48px] w-full sm:w-auto"
@@ -283,7 +284,7 @@ export default function Hero() {
                 <Github size={15} /> GitHub
               </a>
               <a
-                href="/api/social/call"
+                href={`${backendUrl}/api/social/call`}
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#071225]/90 px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm text-slate-300 hover:border-cyan-400/30 hover:text-white transition-colors duration-200 min-h-[48px] w-full sm:w-auto"
               >
                 <Phone size={15} /> Call

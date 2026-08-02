@@ -138,7 +138,7 @@ export default function App() {
                 transition={{ duration: 0.7 }}
                 className="relative overflow-hidden"
               >
-                <Hero />
+                <Hero apiBaseUrl={apiBaseUrl} />
                 <About />
                 <Timeline />
                 <Projects />

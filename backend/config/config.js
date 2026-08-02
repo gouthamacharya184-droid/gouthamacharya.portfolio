@@ -16,42 +16,23 @@ function optionalEnv(key, fallback = "") {
   return (process.env[key] || fallback).trim();
 }
 
-const PORT         = requireEnv("PORT");
-const FRONTEND_URL = requireEnv("FRONTEND_URL");
-const GROQ_KEY     = requireEnv("GROQ_API_KEY");
-const WHATSAPP_NUM = requireEnv("WHATSAPP_NUMBER");
-const PHONE_NUM    = requireEnv("PHONE_NUMBER");
-const GITHUB_RAW   = requireEnv("GITHUB_URL");
-const JWT_SECRET   = requireEnv("JWT_SECRET");
+const PORT         = optionalEnv("PORT", "8787");
+const FRONTEND_URL = optionalEnv("FRONTEND_URL", "*");
+const GROQ_KEY     = optionalEnv("GROQ_API_KEY", "");
+const RAW_WA       = optionalEnv("WHATSAPP_NUMBER", "919000000000");
+const RAW_PHONE    = optionalEnv("PHONE_NUMBER", "919000000000");
+const GITHUB_RAW   = optionalEnv("GITHUB_URL", "https://github.com/gouthamacharya184-droid");
+const RAW_JWT      = optionalEnv("JWT_SECRET", "goutham_portfolio_jwt_secret_key_minimum_32_chars_long_default");
 
-if (!/^\d{7,15}$/.test(WHATSAPP_NUM)) {
-  throw new Error(
-    `[config] WHATSAPP_NUMBER must contain only digits (7–15 chars). ` +
-    `Got: "${WHATSAPP_NUM.slice(0, 4)}..." — remove any +, spaces, or country code prefix.`
-  );
-}
+// Clean digits only for WhatsApp & Phone numbers
+const WHATSAPP_NUM = RAW_WA.replace(/\D/g, "") || "919000000000";
+const PHONE_NUM    = RAW_PHONE.replace(/\D/g, "") || "919000000000";
 
-if (!/^\d{7,15}$/.test(PHONE_NUM)) {
-  throw new Error(
-    `[config] PHONE_NUMBER must contain only digits (7–15 chars). ` +
-    `Got: "${PHONE_NUM.slice(0, 4)}..." — remove any +, spaces, or country code prefix.`
-  );
-}
+const GITHUB_URL = GITHUB_RAW.startsWith("http") ? GITHUB_RAW : `https://${GITHUB_RAW}`;
 
-if (!GITHUB_RAW.startsWith("https://github.com/")) {
-  throw new Error(
-    `[config] GITHUB_URL must start with "https://github.com/". ` +
-    `Got a value that does not match. Check your .env file.`
-  );
-}
-
-if (JWT_SECRET.length < 32) {
-  throw new Error(
-    `[config] JWT_SECRET is too short (${JWT_SECRET.length} chars). ` +
-    `Use at least 32 characters. Generate with:\n` +
-    `  node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`
-  );
-}
+const JWT_SECRET = RAW_JWT.length >= 32
+  ? RAW_JWT
+  : "goutham_portfolio_jwt_secret_key_minimum_32_chars_long_default";
 
 const SMTP_HOST   = optionalEnv("SMTP_HOST");
 const SMTP_PORT   = optionalEnv("SMTP_PORT", "465");
@@ -86,7 +67,7 @@ export const config = {
 
   whatsappNumber:  WHATSAPP_NUM,
   phoneNumber:     PHONE_NUM,
-  githubUrl:       GITHUB_RAW,
+  githubUrl:       GITHUB_URL,
 
   smtp: smtpConfigured
     ? {

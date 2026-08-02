@@ -52,27 +52,36 @@ app.use(
   })
 );
 
-const allowedOrigins = new Set([
-  config.frontendUrl,
-  "http://localhost:5173",
-  "http://127.0.0.1:5173",
-  "http://localhost:4173",
-  "http://127.0.0.1:4173",
-]);
-if (config.ngrokUrl && config.ngrokUrl.startsWith("https://")) {
-  allowedOrigins.add(config.ngrokUrl);
-}
+const configuredOrigins = (config.frontendUrl || "*")
+  .split(",")
+  .map((o) => o.trim().replace(/\/$/, ""))
+  .filter(Boolean);
 
-// Fix 3: Removed Access-Control-Allow-Credentials: true — app uses Bearer
-// tokens (not cookies), so credentials header is unnecessary and misleading.
+const isOriginAllowed = (origin) => {
+  if (!origin) return true; // Direct or server-to-server requests
+  if (configuredOrigins.includes("*")) return true;
+
+  const cleanOrigin = origin.trim().replace(/\/$/, "");
+  if (configuredOrigins.includes(cleanOrigin)) return true;
+
+  // Allow standard local development ports
+  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(cleanOrigin)) return true;
+
+  // Allow Vercel & Render cloud previews/deployments
+  if (cleanOrigin.endsWith(".vercel.app") || cleanOrigin.endsWith(".onrender.com")) return true;
+
+  if (config.ngrokUrl && cleanOrigin === config.ngrokUrl.replace(/\/$/, "")) return true;
+
+  return false;
+};
+
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  const isAllowed = allowedOrigins.has(origin);
 
-  if (isAllowed) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key");
+  if (isOriginAllowed(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin || "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key, Accept");
   }
 
   if (req.method === "OPTIONS") {
