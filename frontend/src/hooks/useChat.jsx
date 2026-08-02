@@ -280,36 +280,47 @@ export function ChatProvider({ children, apiBaseUrl }) {
 
       addLog('system', 'Stream established. Decoding chunks...');
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder('utf-8');
-      setIsTyping(false);
+      if (response.body && typeof response.body.getReader === 'function') {
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        setIsTyping(false);
 
-      let fullText = '';
-      let isFirstChunk = true;
+        let fullText = '';
+        let isFirstChunk = true;
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-        if (isFirstChunk) {
-          const latency = Math.round(performance.now() - startMs);
-          addLog('latency', `Stream response started. Latency: ${latency}ms`);
-          isFirstChunk = false;
+          if (isFirstChunk) {
+            const latency = Math.round(performance.now() - startMs);
+            addLog('latency', `Stream response started. Latency: ${latency}ms`);
+            isFirstChunk = false;
+          }
+
+          fullText += decoder.decode(value, { stream: true });
+
+          setSessions(prev => prev.map(s => {
+            if (s.id !== targetSessionId) return s;
+            const msgs = s.messages.map(m =>
+              m.id === botPlaceholder.id ? { ...m, content: fullText } : m
+            );
+            return { ...s, messages: msgs, updatedAt: Date.now() };
+          }));
+
+          const currentArtifact = extractArtifact(fullText);
+          if (currentArtifact) setActiveArtifact(currentArtifact);
         }
-
-        fullText += decoder.decode(value, { stream: true });
-
-        // Functional update strictly targets targetSessionId
+      } else {
+        const text = await response.text();
+        setIsTyping(false);
         setSessions(prev => prev.map(s => {
           if (s.id !== targetSessionId) return s;
           const msgs = s.messages.map(m =>
-            m.id === botPlaceholder.id ? { ...m, content: fullText } : m
+            m.id === botPlaceholder.id ? { ...m, content: text } : m
           );
           return { ...s, messages: msgs, updatedAt: Date.now() };
         }));
-
-        const currentArtifact = extractArtifact(fullText);
-        if (currentArtifact) setActiveArtifact(currentArtifact);
       }
 
       addLog('system', 'Stream transaction completed.');

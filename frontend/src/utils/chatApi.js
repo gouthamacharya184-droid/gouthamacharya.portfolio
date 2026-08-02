@@ -1,13 +1,15 @@
 export async function checkChatStatus(baseUrl) {
   try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
     const res = await fetch(`${baseUrl}/api/chat/status`, {
-      signal: AbortSignal.timeout(8000),
-    });
+      signal: controller.signal,
+    }).finally(() => clearTimeout(timer));
+
     if (!res.ok && res.status !== 304) return 'offline';
     const data = await res.json().catch(() => null);
     return data?.status === 'online' ? 'online' : 'offline';
   } catch {
-    // Network failure, server down, DNS error, or timeout = genuinely offline
     return 'offline';
   }
 }

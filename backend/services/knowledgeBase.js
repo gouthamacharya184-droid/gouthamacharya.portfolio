@@ -139,3 +139,35 @@ YOUR MANDATE & BEHAVIOR:
 ${fullKnowledgeBase}
 `.trim();
 }
+
+/**
+ * Smart contextual fallback generator for portfolio queries when external LLM service is offline or rate limited.
+ */
+export function getKnowledgeFallbackResponse(query = "") {
+  const q = query.toLowerCase();
+  const p = portfolioData.profile || {};
+
+  if (q.includes("skill") || q.includes("python") || q.includes("tech") || q.includes("know") || q.includes("stack")) {
+    const groups = portfolioData.skillGroups || [];
+    const skillsList = groups.map(g => `**${g.title}**: ${g.skills.map(s => s.name).join(", ")}`).join("\n- ");
+    return `### Goutham's Technical Skills & Expertise:\n- ${skillsList}\n\nGoutham specializes in **Python, LLM evaluation, RAG architectures, FastAPI, and NLP workflows**.`;
+  }
+
+  if (q.includes("project") || q.includes("work") || q.includes("build") || q.includes("hallucination") || q.includes("legal") || q.includes("analysis")) {
+    const projects = portfolioData.projects || [];
+    const projList = projects.map(p => `**${p.title}** (${p.stack.join(", ")}):\n  ${p.description}`).join("\n\n");
+    return `### Selected Portfolio Projects:\n\n${projList}\n\nAll source code is available on [Goutham's GitHub](${p.github || "https://github.com/gouthamacharya184-droid"}).`;
+  }
+
+  if (q.includes("contact") || q.includes("email") || q.includes("reach") || q.includes("hire") || q.includes("github") || q.includes("phone") || q.includes("whatsapp")) {
+    return `### Contact & Connect with Goutham:\n- **Email**: ${p.displayEmail || "gouthamacharya184@gmail.com"}\n- **Location**: ${p.location || "Udupi, Karnataka, India"}\n- **GitHub**: [gouthamacharya184-droid](${p.github || "https://github.com/gouthamacharya184-droid"})\n\nYou can also use the contact form at the bottom of the page to send a direct message!`;
+  }
+
+  if (q.includes("education") || q.includes("college") || q.includes("degree") || q.includes("study") || q.includes("university")) {
+    const edu = portfolioData.education || [];
+    const eduList = edu.map(e => `- **${e.title}** (${e.institution}, ${e.period})`).join("\n");
+    return `### Education & Background:\n${eduList}\n\nGoutham is currently pursuing his **Bachelor of Engineering in Artificial Intelligence & Machine Learning (4th Year)**.`;
+  }
+
+  return `Hello! I'm **Goutham's AI Portfolio Assistant** 👋\n\nGoutham Acharya is an **AI Engineer & Automation Specialist** based in Udupi, Karnataka, India. He specializes in **Python, LLMs, RAG pipelines, and NLP**.\n\nHere are some quick things you can ask me about:\n- 🛠️ **Skills**: Python, Pandas, FastAPI, Scikit-Learn, Prompt Engineering\n- 🚀 **Projects**: LLM Hallucination Detection, Legal AI Assistant, Data Analysis\n- 🎓 **Education**: B.E. in Artificial Intelligence & Machine Learning (4th Year)\n- 📬 **Contact**: Email, GitHub, and WhatsApp\n\nHow can I help you today?`;
+}
