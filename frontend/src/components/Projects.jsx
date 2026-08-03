@@ -145,7 +145,7 @@ export default function Projects() {
               <div className="space-y-3 xs:space-y-4">
                 <h4 className="text-[10px] xs:text-xs uppercase tracking-[0.2em] text-cyan-400 font-bold">Key Features & Achievements</h4>
                 <ul className="space-y-3">
-                  {selectedProject.bullets.map((bullet, idx) => (
+                  {(selectedProject?.bullets ?? []).map((bullet, idx) => (
                     <li key={idx} className="flex gap-3 xs:gap-4 p-3 xs:p-4 rounded-xl bg-white/[0.02] border border-white/5">
                       <div className="h-5 w-5 xs:h-6 xs:w-6 rounded-full bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
                         <span className="text-[10px] xs:text-xs font-bold text-cyan-400">{idx + 1}</span>

@@ -41,6 +41,12 @@ video {
 
 html {
   scroll-behavior: smooth;
+  /* Use `clip` not `hidden` — `overflow-x: hidden` on html creates a new scroll
+     container which, combined with overflow-x: hidden on body, makes the page
+     un-scrollable (the browser has no valid scroll ancestor). `clip` prevents
+     overflow visually without creating a new scroll container. */
+  overflow-x: clip;
+  min-height: 100%;
   /* Safe-area insets for notched phones */
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
@@ -49,9 +55,21 @@ body {
   font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: #010614;
   color: #f1f5f9;
-  overflow-x: hidden;
-  /* Prevent rubber-band scroll from causing layout shifts on iOS */
-  overscroll-behavior-y: none;
+  overflow-x: clip;
+  width: 100%;
+}
+
+/* Scroll lock — used by Navbar drawer and Modal dialogs */
+body.body-scroll-locked {
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }
 
 h1,
@@ -288,5 +306,21 @@ a {
   .xs-safe-x {
     padding-left: max(16px, env(safe-area-inset-left));
     padding-right: max(16px, env(safe-area-inset-right));
+  }
+}
+
+/* ── Chat widget: desktop override for inline mobile styles ── */
+/* Inline styles on the widget have higher specificity than Tailwind md: classes,
+   so we need explicit CSS rules to reset the mobile full-screen positioning
+   at the desktop breakpoint. */
+@media (min-width: 768px) {
+  .chat-widget-container {
+    top: auto !important;
+    left: auto !important;
+    right: 1.5rem !important;
+    bottom: 5.5rem !important;
+    width: 440px !important;
+    max-height: min(680px, calc(100vh - 8rem)) !important;
+    border-radius: 28px !important;
   }
 }

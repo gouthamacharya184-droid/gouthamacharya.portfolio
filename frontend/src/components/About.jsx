@@ -67,7 +67,13 @@ export default function About() {
     );
   }
 
-  const { profile, highlights, strengthCards, certifications } = portfolio;
+  // Defensive destructure with fallbacks — prevents crashes if API omits any arrays
+  const {
+    profile,
+    highlights = [],
+    strengthCards = [],
+    certifications = [],
+  } = portfolio;
 
   // Memoize icon resolution — avoids re-computing on every render
   const resolvedHighlights = useMemo(
@@ -161,7 +167,7 @@ export default function About() {
             <InteractiveCard
               key={card.title}
               title={card.title}
-              text={card.description}
+              text={card.text ?? card.description ?? ""}
               icon={card.icon}
             />
           ))}

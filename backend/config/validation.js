@@ -29,13 +29,12 @@ export const chatSchema = z.object({
     .string({ required_error: "Message is required." })
     .trim()
     .min(1,   { message: "Message cannot be empty." })
-    .max(5000, { message: "Message must not exceed 5000 characters." })
-    .refine((v) => v.length > 0, { message: "Message cannot be blank." }),
+    .max(30000, { message: "Message length limit exceeded." }),
   history: z
     .array(
       z.object({
-        role: z.enum(["user", "assistant", "bot"]),
-        content: z.string().max(4000),
+        role: z.string().max(50),
+        content: z.string().max(30000),
       })
     )
     .optional()

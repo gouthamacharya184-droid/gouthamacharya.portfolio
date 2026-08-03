@@ -95,22 +95,29 @@ export default function Navbar() {
     };
   }, []);
 
-  // Keyboard close handler for drawer menu (accessibility compliance)
+  // Keyboard close + scroll lock for drawer
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape") setOpen(false);
     };
     if (open) {
       window.addEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "hidden"; // Lock page scroll
-    } else {
-      document.body.style.overflow = "";
+      document.body.classList.add("body-scroll-locked");
     }
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
+      // Unconditional remove — idempotent (no-op if class isn't there).
+      // Avoids React Strict Mode double-invoke leaving the class stranded.
+      document.body.classList.remove("body-scroll-locked");
     };
   }, [open]);
+
+  // Safety net: always remove scroll lock when Navbar unmounts
+  useEffect(() => {
+    return () => {
+      document.body.classList.remove("body-scroll-locked");
+    };
+  }, []);
 
   const handleNavClick = (e, href) => {
     e.preventDefault();
@@ -250,6 +257,7 @@ export default function Navbar() {
                     <p className="text-[9px] text-slate-500 uppercase tracking-[0.25em]">AI · ML Portfolio</p>
                   </div>
                 </div>
+                <div className="flex items-center gap-2">
                 <button
                   onClick={closeDrawer}
                   className="h-9 w-9 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:border-white/20 transition-colors"
@@ -259,6 +267,7 @@ export default function Navbar() {
                     <path d="M3 3L13 13M13 3L3 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                   </svg>
                 </button>
+              </div>
               </div>
 
               {/* Navigation Links */}

@@ -61,7 +61,7 @@ export default function Timeline() {
                 <p className="mt-4 text-xs xs:text-sm leading-relaxed text-slate-300">{item.description}</p>
 
                 <ul className="mt-4 space-y-2.5 xs:space-y-3 text-xs xs:text-sm text-slate-300 bg-white/[0.02] border border-white/5 rounded-xl xs:rounded-2xl p-4 xs:p-5">
-                  {item.points.map((point) => (
+                  {(item.points ?? []).map((point) => (
                     <li key={point} className="flex gap-3">
                       <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-cyan-400" />
                       <span>{point}</span>

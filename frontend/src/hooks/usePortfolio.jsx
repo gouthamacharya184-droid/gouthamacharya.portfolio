@@ -66,7 +66,16 @@ export function PortfolioProvider({ children, apiBaseUrl = "" }) {
     if (import.meta.env.VITE_API_BASE_URL) return import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "");
     if (typeof window !== "undefined") {
       const host = window.location.hostname;
-      if (host !== "localhost" && host !== "127.0.0.1" && !host.startsWith("192.168.")) {
+      const isLocalHost =
+        host === "localhost" ||
+        host === "127.0.0.1" ||
+        host === "[::1]" ||
+        host.endsWith(".local") ||
+        /^192\.168\./.test(host) ||
+        /^10\./.test(host) ||
+        /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(host);
+
+      if (!isLocalHost) {
         return "https://goutham-portfolio.onrender.com";
       }
     }

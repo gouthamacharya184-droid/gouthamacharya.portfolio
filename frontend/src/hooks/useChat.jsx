@@ -274,8 +274,8 @@ export function ChatProvider({ children, apiBaseUrl }) {
       if (!response.ok) {
         if (response.status === 429) throw new Error('RATE_LIMITED');
         if (response.status === 503) throw new Error('MAINTENANCE');
-        if (response.status === 400) throw new Error('INVALID_REQUEST');
-        throw new Error('SERVICE_UNAVAILABLE');
+        const errPayload = await response.json().catch(() => ({}));
+        throw new Error(errPayload.message || 'SERVICE_UNAVAILABLE');
       }
 
       addLog('system', 'Stream established. Decoding chunks...');
@@ -335,7 +335,7 @@ export function ChatProvider({ children, apiBaseUrl }) {
       let errMsg = '';
       if (err.message === 'RATE_LIMITED') errMsg = "⚠️ You're sending messages too fast. Please wait a moment.";
       else if (err.message === 'MAINTENANCE') errMsg = '🔧 The AI assistant is temporarily offline. Please check back later.';
-      else if (err.message === 'INVALID_REQUEST') errMsg = '⚠️ Message validation failed. Please check your message length.';
+      else if (err.message && err.message !== 'SERVICE_UNAVAILABLE') errMsg = err.message;
       else errMsg = '⚠️ Unable to connect to AI assistant. Please try again.';
 
       addLog('error', `API failure: ${err.message}`);

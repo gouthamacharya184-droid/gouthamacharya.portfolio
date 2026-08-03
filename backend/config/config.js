@@ -56,6 +56,16 @@ const JWT_SECRET = RAW_JWT.length >= 32
   ? RAW_JWT
   : "goutham_portfolio_jwt_secret_key_minimum_32_chars_long_default";
 
+// SECURITY: In production, reject the hardcoded fallback JWT secret.
+if (NODE_ENV === "production" && JWT_SECRET === "goutham_portfolio_jwt_secret_key_minimum_32_chars_long_default") {
+  // Don't crash — admin routes are the only JWT-protected ones.
+  // But warn loudly so it's visible in Render logs.
+  console.error(
+    "[SECURITY] JWT_SECRET is set to the DEFAULT insecure value in production! " +
+    "Set a strong random JWT_SECRET in your Render environment variables."
+  );
+}
+
 const ADMIN_KEY  = optionalEnv("ADMIN_API_KEY", "");
 
 // ── SMTP (optional) ───────────────────────────────────────────────────────────
@@ -113,6 +123,8 @@ export const config = {
   smtpConfigured,
 };
 
+// Use structured output rather than console.info for consistency.
+// In production, Render captures stdout — console.info is acceptable here.
 console.info(
   `[config] Loaded ✓ — env=${config.nodeEnv}, port=${config.port}, ` +
   `smtp=${smtpConfigured ? "enabled" : "disabled"}, ` +

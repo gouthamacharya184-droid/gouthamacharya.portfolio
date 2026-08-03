@@ -434,12 +434,20 @@ export default function ChatLayout({
                 Backend Endpoint Base URL
               </label>
               <input
-                type="text"
+                type="url"
                 value={baseUrl}
                 onChange={(e) => setBaseUrl(e.target.value)}
-                placeholder="e.g. http://localhost:5000"
-                className="w-full px-3 py-2 rounded-xl bg-white/[0.03] border border-white/10 text-xs text-white focus:outline-none focus:border-cyan-400 transition-all font-mono"
+                placeholder="e.g. https://goutham-portfolio.onrender.com"
+                pattern="https?://.*"
+                className={`w-full px-3 py-2 rounded-xl bg-white/[0.03] border text-xs text-white focus:outline-none focus:border-cyan-400 transition-all font-mono ${
+                  baseUrl && !/^https?:\/\/.+/.test(baseUrl)
+                    ? 'border-rose-500/60'
+                    : 'border-white/10'
+                }`}
               />
+              {baseUrl && !/^https?:\/\/.+/.test(baseUrl) && (
+                <p className="text-[10px] text-rose-400">Must start with http:// or https://</p>
+              )}
             </div>
 
             <div className="space-y-1.5">

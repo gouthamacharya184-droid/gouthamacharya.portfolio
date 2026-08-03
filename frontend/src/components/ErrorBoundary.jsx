@@ -46,9 +46,21 @@ export default class ErrorBoundary extends React.Component {
               </svg>
             </div>
             <h1 className="text-xl font-bold text-white mb-3">Something went wrong</h1>
-            <p className="text-sm text-slate-400 leading-relaxed mb-6">
-              An unexpected error occurred. Please refresh the page to continue.
+            <p className="text-sm text-slate-400 leading-relaxed mb-4">
+              An unexpected error occurred. Details are displayed below:
             </p>
+            {this.state.error && (
+              <div className="mb-6 p-4 rounded-xl bg-rose-950/60 border border-rose-800/40 text-left overflow-x-auto max-h-48 custom-scrollbar">
+                <p className="text-xs font-bold text-rose-300 font-mono mb-1">
+                  {this.state.error.toString()}
+                </p>
+                {this.state.error.stack && (
+                  <pre className="text-[10px] text-rose-400/80 font-mono whitespace-pre-wrap leading-normal">
+                    {this.state.error.stack}
+                  </pre>
+                )}
+              </div>
+            )}
             <button
               onClick={() => window.location.reload()}
               className="inline-flex items-center gap-2 rounded-xl bg-cyan-400 px-6 py-3 text-sm font-bold text-slate-950 hover:bg-cyan-300 transition-colors"

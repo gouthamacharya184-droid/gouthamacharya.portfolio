@@ -9,17 +9,21 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import Section from "./Section";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { usePortfolio, resolveIcon } from "../hooks/usePortfolio";
 import DataSkeleton from "./DataSkeleton";
 
 export default function Skills() {
   const { portfolio, loading } = usePortfolio();
 
-  const skillGroups = (portfolio?.skillGroups ?? []).map((g) => ({
-    ...g,
-    IconComponent: resolveIcon(g.icon),
-  }));
+  const skillGroups = useMemo(
+    () =>
+      (portfolio?.skillGroups ?? []).map((g) => ({
+        ...g,
+        IconComponent: resolveIcon(g.icon),
+      })),
+    [portfolio?.skillGroups]
+  );
   const [activeTab, setActiveTab] = useState("");
 
   // Sync activeTab when portfolio data arrives
@@ -44,7 +48,6 @@ export default function Skills() {
       eyebrow="Skills"
       title="Tools and technologies I work with."
       description="A focused set of capabilities around Python, data, and AI/ML systems."
-      className="pb-0 sm:pb-2"
     >
       {/* Tab scroller */}
       <div className="relative mb-6">
@@ -100,7 +103,7 @@ export default function Skills() {
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-900/80 border border-white/10 group-hover:scale-105 group-hover:border-cyan-400/35 group-hover:shadow-[0_0_15px_rgba(34,211,238,0.1)] transition-all duration-300">
                       <span className="text-[10px] font-bold text-slate-400 group-hover:text-cyan-400 transition-colors">
-                        {skill.name.substring(0, 2).toUpperCase()}
+                        {(skill.name || "").substring(0, 2).toUpperCase()}
                       </span>
                     </div>
                     <div className="min-w-0 flex-1">

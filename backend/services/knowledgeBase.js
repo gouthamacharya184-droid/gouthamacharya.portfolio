@@ -1,4 +1,22 @@
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import { portfolioData } from "../config/portfolio.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const SYSTEM_PROMPT_FILE = path.join(__dirname, "../config/systemPrompt.txt");
+
+function loadMasterSystemPrompt() {
+  try {
+    if (fs.existsSync(SYSTEM_PROMPT_FILE)) {
+      return fs.readFileSync(SYSTEM_PROMPT_FILE, "utf-8").trim();
+    }
+  } catch (err) {
+    console.error("[knowledgeBase] Failed to load systemPrompt.txt:", err.message);
+  }
+  return "You are Goutham's AI Portfolio Assistant, an intelligent, professional, and highly capable conversational agent designed to represent Goutham.";
+}
 
 /**
  * Knowledge Base & RAG Context Builder for Goutham Acharya's Portfolio AI
@@ -95,6 +113,7 @@ function formatSocialContext() {
  * Builds the complete system prompt including all relevant portfolio knowledge context.
  */
 export function buildSystemPromptWithContext(userQuery = "", history = []) {
+  const masterPrompt = loadMasterSystemPrompt();
   const profileCtx = formatProfileContext();
   const expCtx = formatExperienceContext();
   const eduCtx = formatEducationContext();
@@ -105,7 +124,7 @@ export function buildSystemPromptWithContext(userQuery = "", history = []) {
   const socialCtx = formatSocialContext();
 
   const fullKnowledgeBase = `
-=== GOUTHAM ACHARYA - OFFICIAL KNOWLEDGE BASE ===
+=== DYNAMIC PORTFOLIO KNOWLEDGE BASE CONTEXT ===
 
 ${profileCtx}
 
@@ -126,18 +145,7 @@ ${socialCtx}
 ==================================================
 `;
 
-  return `You are the official AI Portfolio Assistant for Goutham Acharya — an AI Engineer & Automation Specialist based in Udupi, Karnataka, India.
-
-YOUR MANDATE & BEHAVIOR:
-1. Speak knowledgeably, accurately, and professionally about Goutham Acharya's background, skills, projects, education, and career goals based directly on the provided Knowledge Base below.
-2. For questions about Goutham Acharya, ALWAYS draw upon the factual knowledge provided below. Be helpful, articulate, and highlight his expertise in Python, LLM evaluation, RAG pipelines, NLP, and machine learning.
-3. For general technical, programming, AI, or coding questions, provide clear, intelligent, and accurate assistance while keeping answers clear, structured, and easy to understand.
-4. Reply EXCLUSIVELY in English regardless of the user's language input.
-5. Never hallucinate facts about Goutham that contradict the Knowledge Base below.
-6. Format your responses using clean Markdown (bold headings, bullet points, concise code blocks when appropriate).
-
-${fullKnowledgeBase}
-`.trim();
+  return `${masterPrompt}\n\n${fullKnowledgeBase}`.trim();
 }
 
 /**

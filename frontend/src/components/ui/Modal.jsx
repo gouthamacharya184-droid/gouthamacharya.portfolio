@@ -16,13 +16,11 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
   useEffect(() => {
     if (isOpen) {
       document.addEventListener('keydown', handleKey);
-      document.body.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
+      document.body.classList.add('body-scroll-locked');
     }
     return () => {
       document.removeEventListener('keydown', handleKey);
-      document.body.style.overflow = '';
-      document.body.style.touchAction = '';
+      document.body.classList.remove('body-scroll-locked');
     };
   }, [isOpen, handleKey]);
 

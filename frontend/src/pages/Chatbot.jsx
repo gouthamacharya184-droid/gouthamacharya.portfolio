@@ -17,8 +17,10 @@ function loadPrefs(defaultBaseUrl) {
     const raw = localStorage.getItem(PREF_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      delete parsed.baseUrl;
-      return { baseUrl: defaultBaseUrl, speechRate: 1.0, ...parsed };
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        delete parsed.baseUrl;
+        return { baseUrl: defaultBaseUrl, speechRate: 1.0, ...parsed };
+      }
     }
   } catch { /* ignore */ }
   return { baseUrl: defaultBaseUrl, speechRate: 1.0 };
@@ -109,11 +111,22 @@ export default function ChatbotPage({ apiBaseUrl }) {
     if (isOpen || isFullscreen) setUnread(0);
   }, [isOpen, isFullscreen]);
 
-  // Body scroll lock
+  // Body scroll lock — only in fullscreen mode or on mobile screens where drawer takes full screen
   useEffect(() => {
-    document.body.style.overflow = (isOpen || isFullscreen) ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const shouldLock = isFullscreen || (isOpen && isMobile);
+    if (shouldLock) {
+      document.body.classList.add('body-scroll-locked');
+    }
+    return () => {
+      document.body.classList.remove('body-scroll-locked');
+    };
   }, [isOpen, isFullscreen]);
+
+  // Safety net: remove scroll lock on unmount
+  useEffect(() => {
+    return () => { document.body.classList.remove('body-scroll-locked'); };
+  }, []);
 
   // Speech cancel on close
   useEffect(() => {
@@ -215,8 +228,13 @@ export default function ChatbotPage({ apiBaseUrl }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-            className="fixed inset-0 z-[110] flex flex-col md:inset-auto md:fixed md:bottom-[5.5rem] md:right-6 md:w-[440px] md:h-[680px] md:max-h-[calc(100vh-7rem)] md:rounded-[28px] overflow-hidden"
+            className="chat-widget-container fixed z-[110] flex flex-col overflow-hidden"
             style={{
+              // Mobile: fills screen below fixed navbar (64px) with safe-area support
+              top: 'calc(max(env(safe-area-inset-top, 0px), 0px) + 64px)',
+              bottom: 'env(safe-area-inset-bottom, 0px)',
+              left: 'env(safe-area-inset-left, 0px)',
+              right: 'env(safe-area-inset-right, 0px)',
               background: 'linear-gradient(180deg, rgba(7,18,37,0.98) 0%, rgba(3,5,8,0.99) 100%)',
               border: '1px solid rgba(255,255,255,0.06)',
               boxShadow: '0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(34,211,238,0.06), inset 0 1px 0 rgba(255,255,255,0.04)',
@@ -336,8 +354,11 @@ export default function ChatbotPage({ apiBaseUrl }) {
               />
             )}
 
-            {/* Widget Input */}
-            <div className="flex-shrink-0 px-4 pb-4 pt-3 border-t border-white/[0.04] bg-[#020407]/40 backdrop-blur-xl">
+            {/* Widget Input — padding-bottom accounts for iOS home indicator */}
+            <div
+              className="flex-shrink-0 px-4 pt-3 border-t border-white/[0.04] bg-[#020407]/40 backdrop-blur-xl"
+              style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+            >
               <ChatInput
                 onSend={handleSend}
                 isTyping={isTyping}

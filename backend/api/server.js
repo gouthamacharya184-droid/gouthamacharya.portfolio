@@ -58,20 +58,28 @@ app.use(
   })
 );
 
-const configuredOrigins = (config.frontendUrl || "*")
+const configuredOrigins = (config.frontendUrl || "")
   .split(",")
   .map((o) => o.trim().replace(/\/$/, ""))
   .filter(Boolean);
 
+// In production, wildcard CORS is not allowed — FRONTEND_URL must be set.
+const allowWildcard = !config.isProduction && configuredOrigins.includes("*");
+
 const isOriginAllowed = (origin) => {
-  if (!origin) return true; // Direct or server-to-server requests
-  if (configuredOrigins.includes("*")) return true;
+  if (!origin) return true; // Direct or server-to-server requests (curl, health checks)
+  if (allowWildcard) return true;
+
+  // In development mode, allow ALL origins so local network devices (phones/tablets on WiFi) can connect seamlessly
+  if (!config.isProduction) return true;
 
   const cleanOrigin = origin.trim().replace(/\/$/, "");
   if (configuredOrigins.includes(cleanOrigin)) return true;
 
-  // Allow standard local development ports
-  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(cleanOrigin)) return true;
+  // Allow standard local development ports & LAN IP addresses (192.168.x.x, 10.x.x.x, 172.16-31.x.x, *.local)
+  if (/^https?:\/\/(localhost|127\.0\.0\.1|\[::1\]|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+|[a-zA-Z0-9-]+\.local)(:\d+)?$/.test(cleanOrigin)) {
+    return true;
+  }
 
   // Allow Vercel & Render cloud previews/deployments
   if (cleanOrigin.endsWith(".vercel.app") || cleanOrigin.endsWith(".onrender.com")) return true;
@@ -90,9 +98,13 @@ app.use((req, res, next) => {
 
   if (isOriginAllowed(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin || "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key, Accept");
     res.setHeader("Access-Control-Max-Age", "86400"); // Cache preflight for 24h
+  } else if (origin) {
+    // Explicitly reject disallowed cross-origin requests
+    logger.warn({ type: "cors_rejected", origin, path: req.path });
+    return res.status(403).json({ ok: false, message: "Origin not allowed." });
   }
 
   if (req.method === "OPTIONS") {

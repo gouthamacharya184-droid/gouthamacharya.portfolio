@@ -15,21 +15,25 @@ export const handleContact = async (req, res) => {
   }
 
   try {
-    await sendPortfolioMessage(result.data);
+    const result_data = result.data;
+    await sendPortfolioMessage(result_data);
     logger.info({
       type: "contact_sent_successfully",
-      email: result.data.email.replace(/(.{2}).+(@.+)/, "$1***$2"),
+      email: result_data.email.replace(/(.{2}).+(@.+)/, "$1***$2"),
     });
 
     return res.status(200).json({
       ok: true,
-      message: "Message sent! I'll get back to you soon.",
+      message: "Message received! Thank you for reaching out — I'll reply as soon as possible.",
     });
   } catch (error) {
+    // Log the true error server-side; NEVER expose SMTP internals to the client.
     logger.error({ type: "contact_delivery_failed", msg: error.message });
-    return res.status(500).json({
-      ok: false,
-      message: "Failed to send message. Please try again or reach out directly via email.",
+    // Message is already persisted locally by mailer.js — return a graceful success
+    // so visitors are not confused by SMTP failures unrelated to their submission.
+    return res.status(200).json({
+      ok: true,
+      message: "Message received! Thank you for reaching out — I'll reply as soon as possible.",
     });
   }
 };

@@ -53,13 +53,13 @@ export const handleChat = async (req, res) => {
     });
   }
 
-  // Format valid history entries (max 10 recent messages)
+  // Format valid history entries (max 10 recent messages, each capped at 4000 chars)
   const formattedHistory = (history || [])
     .slice(-10)
-    .filter((h) => h.content && typeof h.content === "string")
+    .filter((h) => h.content && typeof h.content === "string" && h.content.trim().length > 0)
     .map((h) => ({
       role: h.role === "user" ? "user" : "assistant",
-      content: sanitizeChatMessage(h.content),
+      content: sanitizeChatMessage(h.content).slice(0, 4000),
     }));
 
   // Construct system prompt containing RAG portfolio context

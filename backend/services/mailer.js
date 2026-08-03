@@ -31,8 +31,10 @@ function saveMessageToFile(messageData) {
     });
     fs.writeFileSync(MESSAGES_FILE, JSON.stringify(existing, null, 2), "utf-8");
     logger.info({ type: "contact_message_saved_locally", email: messageData.email });
+    return true;
   } catch (err) {
     logger.error({ type: "save_message_failed", err: err.message });
+    return false;
   }
 }
 
@@ -51,12 +53,16 @@ function buildTransport() {
       pass: config.smtp.pass,
     },
     connectionTimeout: 15_000,
-    greetingTimeout: 10_000,
-    socketTimeout: 20_000,
+    greetingTimeout:  10_000,
+    socketTimeout:    20_000,
     pool: false,
+    // CVE GHSA-r7g4: Enforce strict TLS certificate validation — never downgrade
     tls: {
-      rejectUnauthorized: false,
+      rejectUnauthorized: true,
     },
+    // CVE GHSA-wqvq / GHSA-p6gq: Disable file and URL access to prevent SSRF
+    disableFileAccess: true,
+    disableUrlAccess:  true,
   });
 }
 
@@ -69,14 +75,14 @@ export async function verifyTransport() {
 }
 
 export async function sendPortfolioMessage({ name, email, message }) {
-  // Always back up message locally so it is NEVER lost
+  // Save message locally so data is never lost
   saveMessageToFile({ name, email, message });
 
   const transporter = buildTransport();
 
   if (!transporter || !config.smtp || !config.recipientEmail) {
     logger.warn({ type: "mail_skipped_stored_locally", reason: "smtp_not_configured" });
-    throw new Error("Email service is not configured. Please set valid SMTP_USER, SMTP_PASS, and RECIPIENT_EMAIL in backend/.env.");
+    throw new Error("Email service is not configured. Please set valid SMTP_USER and SMTP_PASS in backend/.env.");
   }
 
   const safeName = escapeHtml(name);
@@ -152,7 +158,11 @@ export async function sendPortfolioMessage({ name, email, message }) {
     }
     return { status: "sent", emailSent: true };
   } catch (err) {
-    logger.error({ type: "mail_error_saved_locally", recipient: "owner", err: err.message });
-    throw new Error(`SMTP Delivery Error: ${err.message}`);
+    logger.error({ type: "mail_error", recipient: "owner", err: err.message });
+    let friendlyReason = err.message;
+    if (err.message.includes("535") || err.message.includes("BadCredentials") || err.message.includes("Username and Password not accepted")) {
+      friendlyReason = "Gmail SMTP authentication failed (535 Bad Credentials). Please update SMTP_PASS in backend/.env with a valid 16-character Gmail App Password.";
+    }
+    throw new Error(friendlyReason);
   }
 }

@@ -19,6 +19,11 @@ export default function NeuralNetworkBackground() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    // Skip on touch/mobile devices — canvas animation causes GPU jank on mobile.
+    // The static dot grid in App.jsx provides sufficient visual depth on mobile.
+    if (window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
+    // Also skip if user prefers reduced motion
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let animationFrameId;
     let particles = [];
     let isVisible = true;
@@ -142,7 +147,7 @@ export default function NeuralNetworkBackground() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-10"
+      className="fixed inset-0 pointer-events-none z-[5]"
       style={{ mixBlendMode: "screen" }}
       aria-hidden="true"
     />

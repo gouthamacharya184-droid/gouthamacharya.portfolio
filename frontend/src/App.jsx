@@ -78,7 +78,16 @@ export default function App() {
     }
     if (typeof window !== "undefined") {
       const host = window.location.hostname;
-      if (host !== "localhost" && host !== "127.0.0.1" && !host.startsWith("192.168.")) {
+      const isLocalHost =
+        host === "localhost" ||
+        host === "127.0.0.1" ||
+        host === "[::1]" ||
+        host.endsWith(".local") ||
+        /^192\.168\./.test(host) ||
+        /^10\./.test(host) ||
+        /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(host);
+
+      if (!isLocalHost) {
         return "https://goutham-portfolio.onrender.com";
       }
     }
@@ -127,7 +136,7 @@ export default function App() {
     <ErrorBoundary>
       <PortfolioProvider apiBaseUrl={apiBaseUrl}>
         <ChatProvider apiBaseUrl={apiBaseUrl}>
-          <div className="min-h-screen bg-[#010614] text-white overflow-x-hidden relative selection:bg-cyan-500/30 selection:text-cyan-100">
+          <div className="min-h-screen bg-[#010614] text-white overflow-x-clip relative selection:bg-cyan-500/30 selection:text-cyan-100">
             <AnimatePresence>{isLoading ? <Loader /> : null}</AnimatePresence>
 
             {/* Static background gradient — no animation, no repaint cost */}
