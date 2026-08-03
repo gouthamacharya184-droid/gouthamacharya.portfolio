@@ -88,7 +88,7 @@ export default function App() {
         /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(host);
 
       if (!isLocalHost) {
-        return "https://goutham-portfolio.onrender.com";
+        return "https://goutham-portfolio-backend.onrender.com";
       }
     }
     return "";
