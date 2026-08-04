@@ -4,9 +4,8 @@ services:
     env: node
     region: oregon
     plan: free
-    rootDir: backend
-    buildCommand: cd .. && npm install --prefix backend && npm install --prefix frontend && npm --prefix frontend run build
-    startCommand: npm start
+    buildCommand: npm install --prefix backend && npm install --prefix frontend && npm --prefix frontend run build
+    startCommand: cd backend && npm start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
