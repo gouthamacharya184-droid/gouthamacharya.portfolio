@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node --watch-path=api --watch-path=controllers --watch-path=services --watch-path=routes --watch-path=middleware api/server.js",
     "build": "echo 'Backend does not require transpilation'",
-    "start": "node api/server.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "compression": "^1.8.1",

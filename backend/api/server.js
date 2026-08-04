@@ -1,4 +1,5 @@
 import compression     from "compression";
+import cors            from "cors";
 import express          from "express";
 import helmet           from "helmet";
 import path             from "path";
@@ -21,165 +22,129 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-// Trust the first proxy (Render, Vercel, ngrok, etc.) so that:
-// 1. Rate limiters read the real client IP from X-Forwarded-For
-// 2. req.secure reflects HTTPS correctly
-// 3. req.ip returns the actual visitor IP, not the load-balancer IP
+// Trust the first proxy (Render, Vercel, ngrok, etc.)
 app.set("trust proxy", 1);
-
 app.locals.isMaintenanceMode = false;
-
 app.disable("x-powered-by");
 
+// Security Headers via Helmet
 app.use(
   helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc:  ["'self'"],
-        scriptSrc:   ["'none'"],
-        styleSrc:    ["'none'"],
-        imgSrc:      ["'self'", "data:", "blob:"],
-        connectSrc:  ["'self'"],
-        frameAncestors: ["'none'"],
-        baseUri:     ["'self'"],
-        formAction:  ["'self'"],
-      },
-    },
-    hsts: {
-      maxAge:            31_536_000,
-      includeSubDomains: true,
-      preload:           true,
-    },
-    noSniff: true,
-    frameguard: { action: "deny" },
-    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+    contentSecurityPolicy: false,
     crossOriginResourcePolicy: { policy: "cross-origin" },
-    crossOriginOpenerPolicy:   { policy: "same-origin" },
   })
 );
 
-const configuredOrigins = (config.frontendUrl || "")
+// ── CORS Configuration ───────────────────────────────────────────────────────
+const defaultAllowedOrigins = [
+  "https://goutham-acharya.vercel.app",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+];
+
+const envOrigins = (process.env.FRONTEND_URL || config.frontendUrl || "")
   .split(",")
   .map((o) => o.trim().replace(/\/$/, ""))
   .filter(Boolean);
 
-// In production, wildcard CORS is not allowed — FRONTEND_URL must be set.
-const allowWildcard = !config.isProduction && configuredOrigins.includes("*");
+const allowedOrigins = Array.from(new Set([...defaultAllowedOrigins, ...envOrigins]));
 
-const isOriginAllowed = (origin) => {
-  if (!origin) return true; // Direct or server-to-server requests (curl, health checks)
-  if (allowWildcard) return true;
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow direct, curl, or server-to-server health checks without origin header
+      if (!origin) return callback(null, true);
 
-  // In development mode, allow ALL origins so local network devices (phones/tablets on WiFi) can connect seamlessly
-  if (!config.isProduction) return true;
+      // Dev mode or wildcard allowed
+      if (!config.isProduction || allowedOrigins.includes("*")) {
+        return callback(null, true);
+      }
 
-  const cleanOrigin = origin.trim().replace(/\/$/, "");
-  if (configuredOrigins.includes(cleanOrigin)) return true;
+      const cleanOrigin = origin.trim().replace(/\/$/, "");
+      const isAllowed = allowedOrigins.some((allowed) => {
+        if (allowed === "*") return true;
+        if (cleanOrigin === allowed) return true;
+        // Allow Vercel preview deploys and Render subdomains
+        if (cleanOrigin.endsWith(".vercel.app") || cleanOrigin.endsWith(".onrender.com")) return true;
+        return false;
+      });
 
-  // Allow standard local development ports & LAN IP addresses (192.168.x.x, 10.x.x.x, 172.16-31.x.x, *.local)
-  if (/^https?:\/\/(localhost|127\.0\.0\.1|\[::1\]|192\.168\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+|[a-zA-Z0-9-]+\.local)(:\d+)?$/.test(cleanOrigin)) {
-    return true;
-  }
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        logger.warn({ type: "cors_rejected", origin });
+        callback(new Error("CORS policy error: Origin not allowed."));
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-API-Key", "Accept"],
+  })
+);
 
-  // Allow Vercel & Render cloud previews/deployments
-  if (cleanOrigin.endsWith(".vercel.app") || cleanOrigin.endsWith(".onrender.com")) return true;
-
-  if (config.ngrokUrl && cleanOrigin === config.ngrokUrl.replace(/\/$/, "")) return true;
-
-  return false;
-};
-
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-
-  // Always send Vary: Origin so CDNs/proxies don't serve a cached CORS
-  // response for one origin to a different origin
-  res.setHeader("Vary", "Origin");
-
-  if (isOriginAllowed(origin)) {
-    res.setHeader("Access-Control-Allow-Origin", origin || "*");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key, Accept");
-    res.setHeader("Access-Control-Max-Age", "86400"); // Cache preflight for 24h
-  } else if (origin) {
-    // Explicitly reject disallowed cross-origin requests
-    logger.warn({ type: "cors_rejected", origin, path: req.path });
-    return res.status(403).json({ ok: false, message: "Origin not allowed." });
-  }
-
-  if (req.method === "OPTIONS") {
-    return res.status(204).end();
-  }
-
-  next();
-});
-
-// Fix 1+2: Removed duplicate inline request-id / logger middleware — these
-// are now exclusively handled by securityMiddleware (requestIdMiddleware +
-// requestLoggerMiddleware + securityEventMiddleware) applied below.
+// Middleware Pipeline
 app.use(securityMiddleware);
 app.use(generalLimiter);
 app.use(compression({ threshold: 1024 }));
 app.use(express.json({ limit: "10kb" }));
 
-// Static Assets & Uploads Serving (with caching headers)
+// Static Assets & Uploads Serving for backend media
 const staticOptions = { maxAge: "1d", etag: true };
 app.use("/api/assets", express.static(path.join(__dirname, "../assets"), staticOptions));
 app.use("/api/uploads", express.static(path.join(__dirname, "../uploads"), staticOptions));
-app.use("/assets", express.static(path.join(__dirname, "../assets"), staticOptions));
-app.use("/uploads", express.static(path.join(__dirname, "../uploads"), staticOptions));
 
-// Public health check
-app.get("/api/health", (_req, res) => {
-  res.status(200).json({ ok: true });
+// ── Root & Health Routes ──────────────────────────────────────────────────────
+// Root GET /
+app.get("/", (_req, res) => {
+  res.status(200).json({ message: "Backend API is running" });
 });
 
-// Modular Routes
+// GET /api/health
+app.get("/api/health", (_req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// ── Modular API Routes ───────────────────────────────────────────────────────
 app.use("/api/portfolio", portfolioRouter);
 app.use("/api/chat", chatRouter);
 app.use("/api/contact", contactRouter);
 app.use("/api/social", socialRouter);
 app.use("/api", adminRouter); // Mounts /auth/login and /admin/*
 
-// Root — minimal HTML, no framework/version disclosure
-app.get("/", (_req, res) => {
-  res.setHeader("Content-Type", "text/html; charset=utf-8");
-  res.status(200).send(
-    "<!doctype html><html><head><title>Portfolio API</title></head>" +
-    "<body><h1>Portfolio API</h1><p>Status: <a href=\"/api/health\">/api/health</a></p></body></html>"
-  );
-});
-
+// ── 404 Handler for Unmatched API Endpoints ─────────────────────────────────
 app.use((req, res) => {
   logger.warn({ type: "not_found", path: req.path, method: req.method });
   res.status(404).json({
-    ok:      false,
-    message: "The requested resource was not found.",
+    ok: false,
+    message: "The requested API endpoint was not found.",
   });
 });
 
+// ── Centralized Error Handling Middleware ───────────────────────────────────
 app.use((err, req, res, next) => {
   const requestId = req.requestId ?? "unknown";
 
   logger.error({
-    type:      "unhandled_error",
+    type: "unhandled_error",
     requestId,
-    path:      req.path,
-    method:    req.method,
-    err,
+    path: req.path,
+    method: req.method,
+    err: err.message || err,
   });
 
-  if (err.message?.startsWith("CORS:")) {
-    return res.status(403).json({ ok: false, message: "Origin not allowed." });
+  if (err.message?.includes("CORS")) {
+    return res.status(403).json({ ok: false, message: "CORS policy error: Origin not allowed." });
   }
 
-  res.status(500).json({
-    ok:        false,
-    message:   "An internal error occurred. Please try again later.",
+  res.status(err.status || 500).json({
+    ok: false,
+    message: err.message || "An internal server error occurred. Please try again later.",
     requestId,
   });
 });
 
+// ── Server Initialization ───────────────────────────────────────────────────
+const PORT = process.env.PORT || config.port || 10000;
 let httpServer;
 
 const start = async () => {
@@ -190,12 +155,13 @@ const start = async () => {
     logger.warn({ type: "smtp_unavailable", msg: err.message });
   }
 
-  httpServer = app.listen(config.port, "0.0.0.0", () => {
+  httpServer = app.listen(PORT, "0.0.0.0", () => {
     logger.info({
       type: "server_started",
-      port: config.port,
-      env:  config.nodeEnv,
+      port: PORT,
+      env: config.nodeEnv,
     });
+    console.log(`Backend API running on port ${PORT}`);
   });
 };
 

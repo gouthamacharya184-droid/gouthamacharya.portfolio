@@ -27,8 +27,8 @@ function optionalEnv(key, fallback = "") {
 }
 
 // ── Server ───────────────────────────────────────────────────────────────────
-// Render assigns PORT dynamically. Local dev default is 8787.
-const PORT         = optionalEnv("PORT", "8787");
+// Render assigns PORT dynamically. Local dev default is 10000.
+const PORT         = optionalEnv("PORT", "10000");
 const NODE_ENV     = optionalEnv("NODE_ENV", "development");
 
 // ── CORS ─────────────────────────────────────────────────────────────────────
