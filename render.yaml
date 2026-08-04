@@ -5,7 +5,7 @@ services:
     region: oregon
     plan: free
     rootDir: backend
-    buildCommand: npm install
+    buildCommand: cd .. && npm install --prefix backend && npm install --prefix frontend && npm --prefix frontend run build
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
