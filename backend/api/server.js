@@ -148,13 +148,7 @@ const PORT = process.env.PORT || config.port || 10000;
 let httpServer;
 
 const start = async () => {
-  try {
-    await verifyTransport();
-    logger.info({ type: "smtp_verified" });
-  } catch (err) {
-    logger.warn({ type: "smtp_unavailable", msg: err.message });
-  }
-
+  // Start listening immediately — do not block on optional external services.
   httpServer = app.listen(PORT, "0.0.0.0", () => {
     logger.info({
       type: "server_started",
@@ -163,6 +157,23 @@ const start = async () => {
     });
     console.log(`Backend API running on port ${PORT}`);
   });
+
+  // Verify SMTP transport asynchronously in the background with a bounded timeout.
+  // This ensures SMTP problems do not prevent the server from accepting traffic.
+  (async () => {
+    try {
+      // Wait at most 5 seconds for verification to succeed.
+      const verifyPromise = verifyTransport();
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error("smtp_verify_timeout")), 5_000).unref()
+      );
+      await Promise.race([verifyPromise, timeoutPromise]);
+      logger.info({ type: "smtp_verified" });
+    } catch (err) {
+      // Don't crash — log and continue. The mailer will handle retries on send.
+      logger.warn({ type: "smtp_unavailable", msg: err?.message || String(err) });
+    }
+  })();
 };
 
 start();

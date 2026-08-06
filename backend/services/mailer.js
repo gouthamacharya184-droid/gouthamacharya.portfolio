@@ -10,26 +10,26 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const MESSAGES_FILE = path.join(__dirname, "../scratch/contact_messages.json");
 
-function saveMessageToFile(messageData) {
+// Async file write helper so message saving doesn't block the event loop.
+async function saveMessageToFile(messageData) {
   try {
     const dir = path.dirname(MESSAGES_FILE);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
+    await fs.promises.mkdir(dir, { recursive: true });
+
     let existing = [];
-    if (fs.existsSync(MESSAGES_FILE)) {
-      try {
-        const raw = fs.readFileSync(MESSAGES_FILE, "utf-8");
-        existing = JSON.parse(raw);
-      } catch {
-        existing = [];
-      }
+    try {
+      const raw = await fs.promises.readFile(MESSAGES_FILE, "utf-8");
+      existing = JSON.parse(raw);
+    } catch {
+      existing = [];
     }
+
     existing.push({
       ...messageData,
       receivedAt: new Date().toISOString(),
     });
-    fs.writeFileSync(MESSAGES_FILE, JSON.stringify(existing, null, 2), "utf-8");
+
+    await fs.promises.writeFile(MESSAGES_FILE, JSON.stringify(existing, null, 2), "utf-8");
     logger.info({ type: "contact_message_saved_locally", email: messageData.email });
     return true;
   } catch (err) {
@@ -66,23 +66,44 @@ function buildTransport() {
   });
 }
 
+/**
+ * verifyTransport — Checks SMTP availability. Returns true if available.
+ * This function never throws for missing configuration; it returns false instead.
+ * Use with a timeout when called from startup to avoid blocking server boot.
+ */
 export async function verifyTransport() {
   const transporter = buildTransport();
   if (!transporter) {
-    throw new Error("SMTP is not configured in backend/.env.");
+    // SMTP not configured — caller should continue without blocking.
+    return false;
   }
-  await transporter.verify();
+
+  // Wrap verify with a timeout to avoid long startup waits.
+  const verifyPromise = transporter.verify();
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error("transporter_verify_timeout")), 10_000).unref()
+  );
+
+  try {
+    await Promise.race([verifyPromise, timeoutPromise]);
+    return true;
+  } catch (err) {
+    logger.warn({ type: "smtp_verify_failed", err: err?.message || String(err) });
+    return false;
+  }
 }
 
 export async function sendPortfolioMessage({ name, email, message }) {
-  // Save message locally so data is never lost
-  saveMessageToFile({ name, email, message });
+  // Save message locally so data is never lost (do not await to avoid blocking request)
+  // We'll still await below to ensure storage before returning in error cases.
+  await saveMessageToFile({ name, email, message });
 
   const transporter = buildTransport();
 
   if (!transporter || !config.smtp || !config.recipientEmail) {
     logger.warn({ type: "mail_skipped_stored_locally", reason: "smtp_not_configured" });
-    throw new Error("Email service is not configured. Please set valid SMTP_USER and SMTP_PASS in backend/.env.");
+    // Return a structured error rather than throwing an internal exception
+    throw new Error("Email service is not configured. Message stored locally.");
   }
 
   const safeName = escapeHtml(name);
