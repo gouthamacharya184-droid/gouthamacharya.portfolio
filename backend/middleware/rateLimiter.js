@@ -23,8 +23,8 @@ export const contactLimiter = rateLimit({
 });
 
 export const chatLimiter = rateLimit({
-  windowMs:              15 * 60 * 1000,
-  max:                   20,
+  windowMs:              1 * 60 * 1000,
+  max:                   10,
   standardHeaders:       true,
   legacyHeaders:         false,
   message:               tooManyRequestsBody("AI chat"),

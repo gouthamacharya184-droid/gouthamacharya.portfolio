@@ -147,14 +147,7 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || config.port || 10000;
 let httpServer;
 
-const start = async () => {
-  try {
-    await verifyTransport();
-    logger.info({ type: "smtp_verified" });
-  } catch (err) {
-    logger.warn({ type: "smtp_unavailable", msg: err.message });
-  }
-
+const start = () => {
   httpServer = app.listen(PORT, "0.0.0.0", () => {
     logger.info({
       type: "server_started",
@@ -162,6 +155,11 @@ const start = async () => {
       env: config.nodeEnv,
     });
     console.log(`Backend API running on port ${PORT}`);
+
+    // Asynchronous non-blocking transport verification (does not delay cold-start HTTP readiness)
+    verifyTransport()
+      .then(() => logger.info({ type: "smtp_verified" }))
+      .catch((err) => logger.warn({ type: "smtp_unavailable", msg: err.message }));
   });
 };
 

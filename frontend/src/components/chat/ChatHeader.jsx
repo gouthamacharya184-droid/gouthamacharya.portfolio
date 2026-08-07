@@ -8,6 +8,7 @@ import { useChatContext } from '../../hooks/useChat';
 function StatusDot({ status }) {
   const colors = {
     online: 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]',
+    warming: 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)] animate-pulse',
     offline: 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]',
     checking: 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]',
   };
@@ -78,7 +79,7 @@ export default function ChatHeader({
             <span className={`text-[10px] uppercase tracking-wider font-bold ${
               aiStatus === 'online' ? 'text-emerald-400' : aiStatus === 'offline' ? 'text-rose-400' : 'text-amber-400 animate-pulse'
             }`}>
-              {aiStatus === 'online' ? 'Online' : aiStatus === 'offline' ? 'Offline' : 'Connecting…'}
+              {aiStatus === 'online' ? 'Online' : aiStatus === 'warming' ? 'Waking Up…' : aiStatus === 'offline' ? 'Offline' : 'Connecting…'}
             </span>
             {recheckStatus && (
               <button

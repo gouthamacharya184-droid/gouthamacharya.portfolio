@@ -264,7 +264,7 @@ export default function ChatbotPage({ apiBaseUrl }) {
                     <Bot size={20} className="text-cyan-400" />
                   </div>
                   <div className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#071225] transition-all ${
-                    aiStatus === 'online' ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse' : aiStatus === 'offline' ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]' : 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)] animate-pulse'
+                    aiStatus === 'online' ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse' : aiStatus === 'offline' ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]' : aiStatus === 'warming' ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)] animate-pulse' : 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)] animate-pulse'
                   }`} />
                 </div>
                 <div>
@@ -274,9 +274,9 @@ export default function ChatbotPage({ apiBaseUrl }) {
                   </div>
                   <div className="flex items-center gap-2 -mt-0.5">
                     <span className={`text-[9px] uppercase tracking-wider font-bold block ${
-                      aiStatus === 'online' ? 'text-emerald-400' : aiStatus === 'offline' ? 'text-rose-400' : 'text-amber-400'
+                      aiStatus === 'online' ? 'text-emerald-400' : aiStatus === 'offline' ? 'text-rose-400' : aiStatus === 'warming' ? 'text-amber-400' : 'text-cyan-400'
                     }`}>
-                      {aiStatus === 'online' ? 'Online' : aiStatus === 'offline' ? 'Offline' : 'Connecting…'}
+                      {aiStatus === 'online' ? 'Online' : aiStatus === 'offline' ? 'Offline' : aiStatus === 'warming' ? 'Waking up...' : 'Connecting…'}
                     </span>
                     <button
                       onClick={recheckStatus}
@@ -316,7 +316,17 @@ export default function ChatbotPage({ apiBaseUrl }) {
               </div>
             </div>
 
-            {/* Offline Warning Banner */}
+            {/* Warming / Offline Warning Banner */}
+            {aiStatus === 'warming' && (
+              <div className="flex items-center justify-between px-4 py-2.5 bg-amber-500/10 border-b border-amber-500/20 flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <span className="inline-block h-2 w-2 rounded-full bg-amber-400 animate-ping shrink-0" />
+                  <span className="text-amber-300 text-[11px] font-medium">
+                    Server is waking up (Render cold start)... Please allow a few seconds.
+                  </span>
+                </div>
+              </div>
+            )}
             {aiStatus === 'offline' && (
               <div className="flex items-center justify-between px-4 py-2.5 bg-rose-500/10 border-b border-rose-500/20 flex-shrink-0">
                 <div className="flex items-center gap-2">
