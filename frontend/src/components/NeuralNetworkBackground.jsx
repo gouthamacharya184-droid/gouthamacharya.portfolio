@@ -13,17 +13,20 @@ import React, { useEffect, useRef } from "react";
 export default function NeuralNetworkBackground() {
   const canvasRef = useRef(null);
 
+  // Don't render the canvas at all on touch / coarse-pointer devices or when
+  // user prefers reduced motion — this avoids the rendering/animation issues
+  // seen on mobile where the element can be visually stretched but the canvas
+  // bitmap is not sized, causing display/animation glitches.
+  if (typeof window !== "undefined" && (window.matchMedia("(hover: none), (pointer: coarse)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches)) {
+    return null;
+  }
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Skip on touch/mobile devices — canvas animation causes GPU jank on mobile.
-    // The static dot grid in App.jsx provides sufficient visual depth on mobile.
-    if (window.matchMedia("(hover: none), (pointer: coarse)").matches) return;
-    // Also skip if user prefers reduced motion
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let animationFrameId;
     let particles = [];
     let isVisible = true;
