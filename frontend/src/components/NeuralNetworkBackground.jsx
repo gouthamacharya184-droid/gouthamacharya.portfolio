@@ -6,6 +6,11 @@
  *  - Draw loop runs in requestAnimationFrame only when section is visible
  *    (uses IntersectionObserver to stop loop when scrolled out of view).
  *  - Reduced particle density on mobile to maintain 60fps on slow devices.
+ *
+ * Changes:
+ *  - Enable rendering on mobile (removed coarse-pointer/hovers checks) while
+ *    fixing high-DPI / CSS pixel scaling to avoid stretched/blank canvases.
+ *  - Honor prefers-reduced-motion to disable animation when requested.
  */
 
 import React, { useEffect, useRef } from "react";
@@ -13,11 +18,8 @@ import React, { useEffect, useRef } from "react";
 export default function NeuralNetworkBackground() {
   const canvasRef = useRef(null);
 
-  // Don't render the canvas at all on touch / coarse-pointer devices or when
-  // user prefers reduced motion — this avoids the rendering/animation issues
-  // seen on mobile where the element can be visually stretched but the canvas
-  // bitmap is not sized, causing display/animation glitches.
-  if (typeof window !== "undefined" && (window.matchMedia("(hover: none), (pointer: coarse)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches)) {
+  // Respect reduced motion but allow rendering on mobile/finger devices.
+  if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
     return null;
   }
 
@@ -31,23 +33,42 @@ export default function NeuralNetworkBackground() {
     let particles = [];
     let isVisible = true;
 
+    // Track CSS (unscaled) width/height and devicePixelRatio for correct scaling
+    let cssWidth = window.innerWidth;
+    let cssHeight = window.innerHeight;
+    let dpr = Math.max(1, window.devicePixelRatio || 1);
+
     // Detect device performance profiles based on screen width
-    const isMobile = window.innerWidth < 768;
+    const isMobile = cssWidth < 768;
     const particleCount = isMobile ? 35 : 75;
     const connectionDistance = isMobile ? 80 : 120;
     const particleSpeed = isMobile ? 0.35 : 0.55;
 
-    // Setup viewport-relative scale
+    // Setup viewport-relative scale for high-DPI displays
     const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      cssWidth = Math.round(window.innerWidth);
+      cssHeight = Math.round(window.innerHeight);
+      dpr = Math.max(1, window.devicePixelRatio || 1);
+
+      // Set CSS size (so the element occupies correct layout space)
+      canvas.style.width = cssWidth + "px";
+      canvas.style.height = cssHeight + "px";
+
+      // Set actual bitmap size scaled by DPR to avoid blurring/stretching
+      canvas.width = Math.round(cssWidth * dpr);
+      canvas.height = Math.round(cssHeight * dpr);
+
+      // Reset transform and scale drawing operations so coordinates are in CSS pixels
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
       initParticles();
     };
 
     class Particle {
       constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
+        // Use CSS pixel dimensions for particle coordinates
+        this.x = Math.random() * cssWidth;
+        this.y = Math.random() * cssHeight;
         this.vx = (Math.random() - 0.5) * particleSpeed;
         this.vy = (Math.random() - 0.5) * particleSpeed;
         this.radius = Math.random() * 1.5 + 1.0;
@@ -57,9 +78,9 @@ export default function NeuralNetworkBackground() {
         this.x += this.vx;
         this.y += this.vy;
 
-        // Bounce at boundaries
-        if (this.x < 0 || this.x > canvas.width) this.vx = -this.vx;
-        if (this.y < 0 || this.y > canvas.height) this.vy = -this.vy;
+        // Bounce at boundaries (CSS pixels)
+        if (this.x < 0 || this.x > cssWidth) this.vx = -this.vx;
+        if (this.y < 0 || this.y > cssHeight) this.vy = -this.vy;
       }
 
       draw() {
@@ -101,7 +122,9 @@ export default function NeuralNetworkBackground() {
 
     const animate = () => {
       if (!isVisible) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Clear using CSS pixel coordinates (ctx is scaled so this clears bitmap correctly)
+      ctx.clearRect(0, 0, cssWidth, cssHeight);
 
       particles.forEach((p) => {
         p.update();
@@ -127,7 +150,7 @@ export default function NeuralNetworkBackground() {
       { threshold: 0.01 }
     );
 
-    // Fix 15: Debounced resize — prevents particle re-init on every pixel of resize
+    // Debounced resize — prevents particle re-init on every pixel of resize
     let resizeTimer;
     const debouncedResize = () => {
       clearTimeout(resizeTimer);
