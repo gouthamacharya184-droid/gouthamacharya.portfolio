@@ -105,7 +105,7 @@ export const portfolioData = {
   projects: [
     {
       title:       "Personal Portfolio Website",
-      image:       "/api/uploads/projects/hallucination.webp",
+      image:       "/project-portfolio.jpg",
       stack:       ["React", "Tailwind CSS", "Vite", "Node.js", "Express"],
       description:
         "Developed a responsive personal portfolio website using React and Tailwind CSS to showcase projects, technical skills, certifications, and contact information, with a modern, mobile-friendly UI focused on usability, responsive design, and clean visual presentation across all devices.",
@@ -118,7 +118,7 @@ export const portfolioData = {
     },
     {
       title:       "LLM Hallucination Detection",
-      image:       "/api/uploads/projects/hallucination.webp",
+      image:       "/project-hallucination.webp",
       stack:       ["Python", "RAG", "Brave Search", "LangChain", "LLM APIs"],
       description:
         "Large Language Models (LLMs) can generate confident but factually incorrect responses (hallucinations). This project integrates multiple LLM APIs and uses RAG with Brave Search to verify responses against trusted sources, measure factual accuracy, and compare hallucination rates across different models.",
@@ -131,7 +131,7 @@ export const portfolioData = {
     },
     {
       title:       "Legal AI Assistant (Chatbot)",
-      image:       "/api/uploads/projects/legal-ai.webp",
+      image:       "/project-legal-ai.webp",
       stack:       ["Gemini API", "Python", "RAG", "Prompt Engineering", "NLP"],
       description:
         "Accessing legal information can be complex and time-consuming for individuals without legal expertise. This project uses the Gemini API to provide an AI-powered legal assistant that answers legal queries, explains legal concepts in simple language, and assists users in understanding legal documents and procedures through a conversational interface.",
@@ -144,7 +144,7 @@ export const portfolioData = {
     },
     {
       title:       "Data Analysis using Python",
-      image:       "/api/uploads/projects/data-analysis.webp",
+      image:       "/project-data-analysis.webp",
       stack:       ["Python", "Pandas", "NumPy", "Matplotlib", "EDA"],
       description:
         "Cleaned and analyzed structured datasets, surfaced patterns through exploratory data analysis (EDA), and visualized key trends for actionable insights.",
