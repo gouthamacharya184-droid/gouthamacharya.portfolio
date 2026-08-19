@@ -60,20 +60,52 @@ const allowedOrigins = new Set([
   "http://localhost:4173",
   "http://127.0.0.1:4173",
 ].filter(Boolean));
+
 if (config.ngrokUrl && config.ngrokUrl.startsWith("https://")) {
   allowedOrigins.add(config.ngrokUrl);
   allowedOrigins.add(config.ngrokUrl.replace(/\/$/, ""));
 }
 
+function isOriginAllowed(origin) {
+  if (!origin) return true;
+
+  if (allowedOrigins.has(origin) || allowedOrigins.has(origin.replace(/\/$/, ""))) {
+    return true;
+  }
+
+  // Allow all Vercel deployments (*.vercel.app)
+  if (/^https:\/\/[a-zA-Z0-9-]+\.vercel\.app$/.test(origin)) {
+    return true;
+  }
+
+  // Allow all Netlify deployments (*.netlify.app)
+  if (/^https:\/\/[a-zA-Z0-9-]+\.netlify\.app$/.test(origin)) {
+    return true;
+  }
+
+  // Allow localhost & local IP dev origins
+  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+    return true;
+  }
+
+  // Allow ngrok & render origins
+  if (/^https:\/\/[a-zA-Z0-9-]+\.(ngrok-free\.app|ngrok\.io|onrender\.com)$/.test(origin)) {
+    return true;
+  }
+
+  return false;
+}
+
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  const isAllowed = allowedOrigins.has(origin);
 
-  if (isAllowed) {
+  if (origin && isOriginAllowed(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key, X-Request-ID");
     res.setHeader("Access-Control-Allow-Credentials", "true");
+  } else if (!origin) {
+    res.setHeader("Access-Control-Allow-Origin", "*");
   }
 
   if (req.method === "OPTIONS") {
