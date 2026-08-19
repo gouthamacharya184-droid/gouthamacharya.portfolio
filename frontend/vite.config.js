@@ -32,10 +32,9 @@ export default defineConfig(({ mode }) => {
       port:        5173,
       strictPort:  true,
       allowedHosts,
-      hmr: {
-        // Required for HMR to work through an HTTPS reverse proxy (ngrok)
-        clientPort: 443,
-      },
+      hmr: env.VITE_ALLOWED_HOST
+        ? { clientPort: 443 }
+        : true,
       proxy: {
         // During dev, all /api/* requests are forwarded to the backend.
         // This keeps the frontend origin-agnostic and avoids CORS in dev.

@@ -53,13 +53,16 @@ app.use(
 
 const allowedOrigins = new Set([
   config.frontendUrl,
+  config.frontendUrl?.replace(/\/$/, ""),
+  "https://gouthamacharya.vercel.app",
   "http://localhost:5173",
   "http://127.0.0.1:5173",
   "http://localhost:4173",
   "http://127.0.0.1:4173",
-]);
+].filter(Boolean));
 if (config.ngrokUrl && config.ngrokUrl.startsWith("https://")) {
   allowedOrigins.add(config.ngrokUrl);
+  allowedOrigins.add(config.ngrokUrl.replace(/\/$/, ""));
 }
 
 app.use((req, res, next) => {

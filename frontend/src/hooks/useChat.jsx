@@ -183,6 +183,7 @@ export function ChatProvider({ children, apiBaseUrl }) {
       if (err.message === 'RATE_LIMITED')     errMsg = "⚠️ You're sending messages too fast. Please wait a moment.";
       else if (err.message === 'MAINTENANCE') errMsg = '🔧 The AI assistant is temporarily offline. Please check back later.';
       else if (err.message === 'INVALID_REQUEST') errMsg = '⚠️ Message validation failed. Please check your message length.';
+      else errMsg = '⚠️ Unable to connect to backend server. Please check your network connection.';
 
       addLog('error', `API failure: ${err.message}`);
 
