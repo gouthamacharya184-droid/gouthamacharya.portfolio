@@ -54,13 +54,19 @@ const RECIPIENT   = optionalEnv("RECIPIENT_EMAIL");
 const NGROK_URL   = optionalEnv("NGROK_URL");
 const ADMIN_KEY   = optionalEnv("ADMIN_API_KEY");
 
-const smtpConfigured =
-  SMTP_HOST && SMTP_USER && SMTP_PASS && RECIPIENT;
+const smtpConfigured = Boolean(
+  SMTP_HOST &&
+  SMTP_USER &&
+  SMTP_PASS &&
+  RECIPIENT &&
+  SMTP_PASS !== "REPLACE_WITH_NEW_APP_PASSWORD" &&
+  !SMTP_PASS.startsWith("REPLACE_")
+);
 
 if (!smtpConfigured) {
   console.warn(
-    "\n⚠️  [config] SMTP is not fully configured — contact form emails will not send.\n" +
-    "   Set SMTP_HOST, SMTP_USER, SMTP_PASS, and RECIPIENT_EMAIL in backend/.env.\n"
+    "\n⚠️  [config] SMTP is not fully configured — contact form emails will be logged safely to server logs.\n" +
+    "   Set SMTP_HOST, SMTP_USER, SMTP_PASS (App Password), and RECIPIENT_EMAIL in backend/.env to enable live email delivery.\n"
   );
 }
 

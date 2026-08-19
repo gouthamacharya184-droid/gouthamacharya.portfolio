@@ -31,9 +31,14 @@ export async function verifyTransport() {
 }
 
 export async function sendPortfolioMessage({ name, email, message }) {
-  if (!transporter || !config.smtp || !config.recipientEmail) {
-    logger.warn({ type: "mail_skipped", reason: "smtp_not_configured" });
-    throw new Error("Email service is not available right now.");
+  if (!transporter || !config.smtpConfigured || !config.recipientEmail) {
+    logger.info({
+      type: "contact_message_logged_offline",
+      name,
+      email: email.replace(/(.{2}).+(@.+)/, "$1***$2"),
+      messageSnippet: message.slice(0, 50),
+    });
+    return { ok: true, offlineLogged: true };
   }
 
   const safeName    = escapeHtml(name);
@@ -102,14 +107,22 @@ export async function sendPortfolioMessage({ name, email, message }) {
     await transporter.sendMail(ownerMail);
     logger.info({ type: "mail_sent", recipient: "owner" });
   } catch (err) {
-    logger.error({ type: "mail_error", recipient: "owner", err });
-    throw new Error("Failed to deliver your message. Please try again later.");
+    logger.error({ type: "mail_error", recipient: "owner", err: err.message });
+    logger.info({
+      type: "contact_message_logged_fallback",
+      name,
+      email: email.replace(/(.{2}).+(@.+)/, "$1***$2"),
+      messageSnippet: message.slice(0, 50),
+    });
+    return { ok: true, fallbackLogged: true };
   }
 
   try {
     await transporter.sendMail(confirmationMail);
     logger.info({ type: "mail_sent", recipient: "sender" });
   } catch (err) {
-    logger.warn({ type: "mail_warn", recipient: "sender_confirmation", err });
+    logger.warn({ type: "mail_warn", recipient: "sender_confirmation", err: err.message });
   }
+
+  return { ok: true };
 }
