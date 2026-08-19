@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import {
   Award,
   BadgeCheck,
@@ -61,35 +61,7 @@ export function PortfolioProvider({ children, apiBaseUrl = "" }) {
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
 
-  const base = useMemo(() => {
-    if (apiBaseUrl) return apiBaseUrl.replace(/\/$/, "");
-    if (import.meta.env.VITE_API_BASE_URL) return import.meta.env.VITE_API_BASE_URL.replace(/\/$/, "");
-    if (typeof window !== "undefined") {
-      const host = window.location.hostname;
-      const isLocalHost =
-        host === "localhost" ||
-        host === "127.0.0.1" ||
-        host === "[::1]" ||
-        host.endsWith(".local") ||
-        /^192\.168\./.test(host) ||
-        /^10\./.test(host) ||
-        /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(host);
-
-      if (!isLocalHost) {
-        return "https://goutham-portfolio-backend.onrender.com";
-      }
-    }
-    return "";
-  }, [apiBaseUrl]);
-
-  const getAssetUrl = useCallback((path) => {
-    if (!path) return "";
-    if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:")) {
-      return path;
-    }
-    const cleanPath = path.startsWith("/") ? path : `/${path}`;
-    return base ? `${base}${cleanPath}` : cleanPath;
-  }, [base]);
+  const base = apiBaseUrl.replace(/\/$/, "");
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
@@ -111,29 +83,21 @@ export function PortfolioProvider({ children, apiBaseUrl = "" }) {
       const portfolioJson = await portfolioRes.json();
       const configJson    = await configRes.json();
 
-      const data = portfolioJson?.data ? { ...portfolioJson.data } : null;
-      if (data && Array.isArray(data.projects)) {
-        data.projects = data.projects.map((p) => ({
-          ...p,
-          image: getAssetUrl(p.image),
-        }));
-      }
-
-      setPortfolio(data);
+      setPortfolio(portfolioJson.data);
       setSiteConfig(configJson.data);
     } catch (err) {
       setError("Portfolio data is temporarily unavailable. Please refresh the page.");
     } finally {
       setLoading(false);
     }
-  }, [base, getAssetUrl]);
+  }, [base]);
 
   useEffect(() => {
     fetchAll();
   }, [fetchAll]);
 
   return (
-    <PortfolioContext.Provider value={{ portfolio, siteConfig, loading, error, refetch: fetchAll, getAssetUrl, apiBaseUrl: base }}>
+    <PortfolioContext.Provider value={{ portfolio, siteConfig, loading, error, refetch: fetchAll }}>
       {children}
     </PortfolioContext.Provider>
   );

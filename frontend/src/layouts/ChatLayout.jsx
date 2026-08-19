@@ -175,7 +175,7 @@ export default function ChatLayout({
 
         {messages.length <= 1 ? (
           <div className="flex-1 overflow-y-auto px-6 py-8 custom-scrollbar">
-            <EmptyState onSend={handleSend} fullscreen={true} disabled={aiStatus === 'offline'} />
+            <EmptyState onSend={handleSend} fullscreen={true} />
           </div>
         ) : (
           <div className="flex-1 flex flex-col min-w-0 relative overflow-hidden">
@@ -196,12 +196,7 @@ export default function ChatLayout({
         )}
 
         <div className="flex-shrink-0 px-6 pb-6 pt-4 border-t border-white/[0.04] bg-[#03050a]/40 backdrop-blur-xl">
-          <ChatInput
-            onSend={handleSend}
-            isTyping={isTyping}
-            fullscreen={true}
-            disabled={aiStatus === 'offline'}
-          />
+          <ChatInput onSend={handleSend} isTyping={isTyping} fullscreen={true} />
         </div>
 
         <AnimatePresence>
@@ -434,20 +429,12 @@ export default function ChatLayout({
                 Backend Endpoint Base URL
               </label>
               <input
-                type="url"
+                type="text"
                 value={baseUrl}
                 onChange={(e) => setBaseUrl(e.target.value)}
-                placeholder="e.g. https://goutham-portfolio.onrender.com"
-                pattern="https?://.*"
-                className={`w-full px-3 py-2 rounded-xl bg-white/[0.03] border text-xs text-white focus:outline-none focus:border-cyan-400 transition-all font-mono ${
-                  baseUrl && !/^https?:\/\/.+/.test(baseUrl)
-                    ? 'border-rose-500/60'
-                    : 'border-white/10'
-                }`}
+                placeholder="e.g. http://localhost:5000"
+                className="w-full px-3 py-2 rounded-xl bg-white/[0.03] border border-white/10 text-xs text-white focus:outline-none focus:border-cyan-400 transition-all font-mono"
               />
-              {baseUrl && !/^https?:\/\/.+/.test(baseUrl) && (
-                <p className="text-[10px] text-rose-400">Must start with http:// or https://</p>
-              )}
             </div>
 
             <div className="space-y-1.5">

@@ -8,7 +8,3 @@ export const whatsappRedirect = (_req, res) => {
 export const githubRedirect = (_req, res) => {
   res.redirect(302, config.githubUrl);
 };
-
-export const callRedirect = (_req, res) => {
-  res.redirect(302, `tel:${config.phoneNumber}`);
-};

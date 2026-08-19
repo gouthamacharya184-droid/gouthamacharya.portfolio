@@ -1,97 +1,48 @@
 import nodemailer from "nodemailer";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-import { config } from "../config/config.js";
+import { config }    from "../config/config.js";
 import { escapeHtml } from "../config/validation.js";
-import { logger } from "./logger.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const MESSAGES_FILE = path.join(__dirname, "../scratch/contact_messages.json");
-
-function saveMessageToFile(messageData) {
-  try {
-    const dir = path.dirname(MESSAGES_FILE);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    let existing = [];
-    if (fs.existsSync(MESSAGES_FILE)) {
-      try {
-        const raw = fs.readFileSync(MESSAGES_FILE, "utf-8");
-        existing = JSON.parse(raw);
-      } catch {
-        existing = [];
-      }
-    }
-    existing.push({
-      ...messageData,
-      receivedAt: new Date().toISOString(),
-    });
-    fs.writeFileSync(MESSAGES_FILE, JSON.stringify(existing, null, 2), "utf-8");
-    logger.info({ type: "contact_message_saved_locally", email: messageData.email });
-    return true;
-  } catch (err) {
-    logger.error({ type: "save_message_failed", err: err.message });
-    return false;
-  }
-}
+import { logger }    from "./logger.js";
 
 function buildTransport() {
   if (!config.smtpConfigured || !config.smtp) return null;
 
-  const portNum = Number(config.smtp.port) || 465;
-  const isSecure = config.smtp.secure !== undefined ? config.smtp.secure : portNum === 465;
-
   return nodemailer.createTransport({
-    host: config.smtp.host,
-    port: portNum,
-    secure: isSecure,
+    host:   config.smtp.host,
+    port:   config.smtp.port,
+    secure: config.smtp.secure,
     auth: {
       user: config.smtp.user,
       pass: config.smtp.pass,
     },
-    connectionTimeout: 15_000,
-    greetingTimeout:  10_000,
-    socketTimeout:    20_000,
+    connectionTimeout: 10_000,
+    greetingTimeout:   5_000,
+    socketTimeout:     15_000,
     pool: false,
-    // CVE GHSA-r7g4: Enforce strict TLS certificate validation — never downgrade
-    tls: {
-      rejectUnauthorized: true,
-    },
-    // CVE GHSA-wqvq / GHSA-p6gq: Disable file and URL access to prevent SSRF
-    disableFileAccess: true,
-    disableUrlAccess:  true,
   });
 }
 
+const transporter = buildTransport();
+
 export async function verifyTransport() {
-  const transporter = buildTransport();
   if (!transporter) {
-    throw new Error("SMTP is not configured in backend/.env.");
+    throw new Error("SMTP is not configured.");
   }
   await transporter.verify();
 }
 
 export async function sendPortfolioMessage({ name, email, message }) {
-  // Save message locally so data is never lost
-  saveMessageToFile({ name, email, message });
-
-  const transporter = buildTransport();
-
   if (!transporter || !config.smtp || !config.recipientEmail) {
-    logger.warn({ type: "mail_skipped_stored_locally", reason: "smtp_not_configured" });
-    throw new Error("Email service is not configured. Please set valid SMTP_USER and SMTP_PASS in backend/.env.");
+    logger.warn({ type: "mail_skipped", reason: "smtp_not_configured" });
+    throw new Error("Email service is not available right now.");
   }
 
-  const safeName = escapeHtml(name);
-  const safeEmail = escapeHtml(email);
+  const safeName    = escapeHtml(name);
+  const safeEmail   = escapeHtml(email);
   const safeMessage = escapeHtml(message).replace(/\n/g, "<br />");
 
   const ownerMail = {
-    from: `"Portfolio Contact" <${config.smtp.user}>`,
-    to: config.recipientEmail,
+    from:    `"Portfolio Contact" <${config.smtp.user}>`,
+    to:      config.recipientEmail,
     replyTo: email,
     subject: `New portfolio message from ${safeName}`,
     text: [
@@ -123,8 +74,8 @@ export async function sendPortfolioMessage({ name, email, message }) {
   };
 
   const confirmationMail = {
-    from: `"Goutham Acharya Portfolio" <${config.smtp.user}>`,
-    to: email,
+    from:    `"Goutham Acharya Portfolio" <${config.smtp.user}>`,
+    to:      email,
     subject: "Thanks for reaching out — message received",
     text: [
       `Hi ${name},`,
@@ -150,19 +101,15 @@ export async function sendPortfolioMessage({ name, email, message }) {
   try {
     await transporter.sendMail(ownerMail);
     logger.info({ type: "mail_sent", recipient: "owner" });
-    try {
-      await transporter.sendMail(confirmationMail);
-      logger.info({ type: "mail_sent", recipient: "sender" });
-    } catch (err) {
-      logger.warn({ type: "mail_warn", recipient: "sender_confirmation", err: err.message });
-    }
-    return { status: "sent", emailSent: true };
   } catch (err) {
-    logger.error({ type: "mail_error", recipient: "owner", err: err.message });
-    let friendlyReason = err.message;
-    if (err.message.includes("535") || err.message.includes("BadCredentials") || err.message.includes("Username and Password not accepted")) {
-      friendlyReason = "Gmail SMTP authentication failed (535 Bad Credentials). Please update SMTP_PASS in backend/.env with a valid 16-character Gmail App Password.";
-    }
-    throw new Error(friendlyReason);
+    logger.error({ type: "mail_error", recipient: "owner", err });
+    throw new Error("Failed to deliver your message. Please try again later.");
+  }
+
+  try {
+    await transporter.sendMail(confirmationMail);
+    logger.info({ type: "mail_sent", recipient: "sender" });
+  } catch (err) {
+    logger.warn({ type: "mail_warn", recipient: "sender_confirmation", err });
   }
 }

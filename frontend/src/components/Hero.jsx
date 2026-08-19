@@ -1,4 +1,4 @@
-import { ArrowDown, Download, Github, MessageCircle, Sparkles, Cpu, Phone } from "lucide-react";
+import { ArrowDown, Download, Github, MessageCircle, Sparkles, Cpu } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import ProgressiveImage from "./ProgressiveImage";
@@ -38,7 +38,9 @@ function ParticleCanvas() {
       r: Math.random() * 1.5 + 0.3,
       dx: (Math.random() - 0.5) * 0.25,
       dy: (Math.random() - 0.5) * 0.25,
-      alpha: Math.random() * 0.4 + 0.2,
+      alpha: Math.random() * 0.5 + 0.1,
+      flicker: Math.random() * Math.PI * 2,
+      flickerSpeed: Math.random() * 0.02 + 0.005,
     }));
 
     const draw = () => {
@@ -46,13 +48,15 @@ function ParticleCanvas() {
       for (const p of particles) {
         p.x += p.dx;
         p.y += p.dy;
+        p.flicker += p.flickerSpeed;
         if (p.x < 0) p.x = W;
         if (p.x > W) p.x = 0;
         if (p.y < 0) p.y = H;
         if (p.y > H) p.y = 0;
+        const flickeredAlpha = p.alpha * (0.6 + 0.4 * Math.sin(p.flicker));
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(148, 236, 252, ${p.alpha})`;
+        ctx.fillStyle = `rgba(148, 236, 252, ${flickeredAlpha})`;
         ctx.fill();
       }
       animId = requestAnimationFrame(draw);
@@ -134,11 +138,10 @@ function useTypewriter(words) {
   return displayed;
 }
 
-export default function Hero({ apiBaseUrl = "" }) {
-  const { portfolio, getAssetUrl, apiBaseUrl: contextApiBaseUrl } = usePortfolio();
+export default function Hero() {
+  const { portfolio } = usePortfolio();
   const profile = portfolio?.profile ?? { name: "Goutham Acharya", location: "", github: "#" };
   const currentText = useTypewriter(typewriterWords);
-  const backendUrl = (apiBaseUrl || contextApiBaseUrl || "").replace(/\/$/, "");
 
   return (
     <>
@@ -164,22 +167,59 @@ export default function Hero({ apiBaseUrl = "" }) {
             <motion.div
               whileHover={{ y: -6, scale: 1.01 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              className="relative w-full max-w-[250px] xxs:max-w-[270px] xs:max-w-[320px] sm:max-w-[390px] md:max-w-[440px] lg:max-w-[440px] xl:max-w-[490px] mx-auto lg:mx-0 group cursor-default"
+              className="relative w-full max-w-[220px] xxs:max-w-[240px] xs:max-w-[280px] sm:max-w-[340px] md:max-w-[380px] lg:max-w-[380px] xl:max-w-[420px] mx-auto lg:mx-0 group cursor-default"
             >
               {/* Glow effects — reduced on mobile */}
-              <div className="absolute -inset-4 sm:-inset-6 bg-[radial-gradient(circle,rgba(14,165,233,0.2),transparent_65%)] blur-2xl sm:blur-3xl pointer-events-none opacity-80" />
+              <div className="absolute -inset-4 sm:-inset-6 bg-[radial-gradient(circle,rgba(14,165,233,0.2),transparent_65%)] blur-2xl sm:blur-3xl pointer-events-none animate-pulse-slow" />
               <div className="hidden sm:block absolute -inset-10 bg-[radial-gradient(circle,rgba(168,85,247,0.12),transparent_60%)] blur-3xl pointer-events-none mix-blend-screen" />
 
-              {/* Profile Image container without background frame */}
-              <div className="relative">
+              {/* Top-right floating badge — only visible sm+ */}
+              <motion.div
+                initial={{ opacity: 0, x: 15 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 1.3, duration: 0.6 }}
+                className="absolute top-0 right-0 translate-x-2 -translate-y-2 rounded-2xl border border-cyan-400/20 bg-[#081329]/95 backdrop-blur-xl px-3 py-2 shadow-2xl z-20 hidden sm:block"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center h-6 w-6 rounded-full bg-violet-500/20 text-violet-400 shrink-0">
+                    <Cpu size={12} />
+                  </div>
+                  <div>
+                    <div className="text-white font-bold text-xs">4+ AI Projects</div>
+                    <div className="text-slate-400 text-[9px] uppercase tracking-wider font-semibold">Built &amp; Deployed</div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Image card */}
+              <div className="relative rounded-[1.25rem] xs:rounded-[1.5rem] border border-cyan-400/20 bg-white/5 p-1.5 xs:p-2 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.4)] xs:shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
+                <div className="absolute inset-0 rounded-[1.25rem] xs:rounded-[1.5rem] shadow-[inset_0_0_20px_rgba(34,211,238,0.1)] pointer-events-none" />
                 <ProgressiveImage
-                  src={getAssetUrl("/api/assets/profile.webp")}
+                  src="/api/assets/profile.webp"
                   alt="Goutham Acharya profile photo"
                   loading="eager"
-                  className="w-full h-auto max-h-[340px] xs:max-h-[410px] sm:max-h-[480px] md:max-h-[550px] lg:max-h-[530px] object-cover object-top"
+                  className="w-full h-auto max-h-[300px] xs:max-h-[360px] sm:max-h-[420px] md:max-h-[480px] lg:max-h-[460px] object-cover object-top rounded-[1rem] xs:rounded-[1.2rem]"
                 />
               </div>
 
+              {/* Bottom-left floating badge */}
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.5, duration: 0.6 }}
+                className="absolute left-1.5 xs:left-2 bottom-1.5 xs:bottom-2 rounded-[1rem] xs:rounded-[1.2rem] border border-cyan-400/25 bg-[#081329]/95 backdrop-blur-xl px-2.5 xs:px-3 py-2 xs:py-2.5 shadow-2xl z-20"
+              >
+                <div className="flex items-center gap-2 xs:gap-2.5">
+                  <div className="h-7 w-7 xs:h-9 xs:w-9 rounded-lg xs:rounded-xl bg-cyan-400/15 border border-cyan-300/20 flex items-center justify-center text-cyan-300 shrink-0">
+                    <Cpu size={14} className="xs:hidden" />
+                    <Cpu size={17} className="hidden xs:block" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-white font-bold text-[10px] xs:text-xs truncate">Python &amp; LLMs</div>
+                    <div className="text-slate-300 text-[9px] xs:text-[10px] truncate font-medium">{profile.location}</div>
+                  </div>
+                </div>
+              </motion.div>
             </motion.div>
           </motion.div>
 
@@ -198,7 +238,7 @@ export default function Hero({ apiBaseUrl = "" }) {
               className="inline-flex items-center gap-2 px-3 xs:px-4 py-1.5 xs:py-2 rounded-full border border-cyan-400/20 bg-[#071225]/70 shadow-[0_0_30px_rgba(14,165,233,0.08)] backdrop-blur-md mb-4 xs:mb-5 sm:mb-6"
             >
               <div className="flex items-center gap-1.5 text-cyan-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.9)] shrink-0" />
+                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.9)] animate-pulse shrink-0" />
                 <Sparkles size={11} />
               </div>
               <span className="text-cyan-200 tracking-[0.12em] text-[9px] xs:text-[10px] sm:text-[11px] uppercase font-semibold">
@@ -211,7 +251,7 @@ export default function Hero({ apiBaseUrl = "" }) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.7 }}
-              className="font-black tracking-tight mb-3 xs:mb-4 sm:mb-5 leading-[1.1] text-white"
+              className="font-black tracking-tight mb-3 xs:mb-4 sm:mb-5 leading-[1.1] text-white whitespace-nowrap"
               style={{ fontSize: "var(--text-hero)" }}
             >
               {profile.name}
@@ -227,7 +267,7 @@ export default function Hero({ apiBaseUrl = "" }) {
               <div className="flex items-center gap-2 px-3 xs:px-4 py-2 rounded-full border border-violet-400/15 bg-[#071225]/85 backdrop-blur-lg text-xs sm:text-sm text-slate-200 shadow-[0_0_20px_rgba(139,92,246,0.08)] max-w-full overflow-hidden">
                 <Cpu size={13} className="text-violet-400 shrink-0" />
                 <span className="truncate max-w-[200px] xs:max-w-[220px] sm:max-w-none inline-block">{currentText}</span>
-                <span className="w-0.5 h-4 bg-cyan-400 shrink-0 ml-0.5" aria-hidden="true" />
+                <span className="w-0.5 h-4 bg-cyan-400 animate-pulse shrink-0 ml-0.5" aria-hidden="true" />
               </div>
             </motion.div>
 
@@ -240,9 +280,9 @@ export default function Hero({ apiBaseUrl = "" }) {
               style={{ fontSize: "var(--text-body-lg)" }}
             >
               AI Engineer specializing in{" "}
-              <span className="font-semibold text-white">Python, Large Language Models (LLMs), RAG pipelines, FastAPI, and NLP</span>.{" "}
-              I design and develop scalable, production-ready AI systems that transform complex data into{" "}
-              <span className="text-cyan-400 font-semibold">intelligent, reliable, and real-world solutions.</span>
+              <span className="font-semibold text-white">Python, LLM integration, RAG pipelines, and NLP automation</span>.{" "}
+              I design and build production-ready intelligent systems that turn complex datasets into{" "}
+              <span className="text-cyan-400 font-semibold">validated, real-world solutions.</span>
             </motion.p>
 
             {/* Primary CTA buttons — stacked on mobile, row on sm+ */}
@@ -259,7 +299,7 @@ export default function Hero({ apiBaseUrl = "" }) {
                 View My Work <ArrowDown size={15} strokeWidth={2.5} />
               </a>
               <a
-                href={`${backendUrl}/api/uploads/resume.pdf`}
+                href="/api/uploads/resume.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md px-5 xs:px-6 py-3 xs:py-3.5 text-sm font-semibold text-slate-200 hover:bg-white/10 hover:border-cyan-400/35 hover:text-cyan-300 hover:shadow-[0_0_20px_rgba(34,211,238,0.15)] transition-all duration-200 min-h-[48px] w-full sm:w-auto"
@@ -268,32 +308,26 @@ export default function Hero({ apiBaseUrl = "" }) {
               </a>
             </motion.div>
 
-            {/* Secondary social links */}
+            {/* Secondary social links — 2-col grid on mobile */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.1, duration: 0.8 }}
-              className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto"
+              className="grid grid-cols-2 sm:flex sm:flex-row items-center gap-3 w-full sm:w-auto"
             >
               <a
                 href={profile.github}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#071225]/90 px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm text-slate-300 hover:border-cyan-400/30 hover:text-white transition-colors duration-200 min-h-[48px] w-full sm:w-auto"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#071225]/90 px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm text-slate-300 hover:border-cyan-400/30 hover:text-white transition-all duration-200 min-h-[48px]"
               >
                 <Github size={15} /> GitHub
               </a>
               <a
-                href={`${backendUrl}/api/social/call`}
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#071225]/90 px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm text-slate-300 hover:border-cyan-400/30 hover:text-white transition-colors duration-200 min-h-[48px] w-full sm:w-auto"
-              >
-                <Phone size={15} /> Call
-              </a>
-              <a
                 href="#contact"
-                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#071225]/90 px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm text-slate-300 hover:border-cyan-400/30 hover:text-white transition-colors duration-200 min-h-[48px] w-full sm:w-auto"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#071225]/90 px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm text-slate-300 hover:border-cyan-400/30 hover:text-white transition-all duration-200 min-h-[48px]"
               >
-                <MessageCircle size={15} /> Contact Me
+                <MessageCircle size={15} /> WhatsApp
               </a>
             </motion.div>
           </motion.div>

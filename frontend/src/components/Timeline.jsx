@@ -11,7 +11,7 @@ export default function Timeline() {
     </Section>
   );
   const experience = portfolio?.experience ?? [];
-  const education = portfolio?.education ?? [];
+  const education  = portfolio?.education  ?? [];
 
   // Resolve icon strings → Lucide components for education items
   const resolvedEducation = education.map((e) => ({ ...e, IconComponent: resolveIcon(e.icon) }));
@@ -61,7 +61,7 @@ export default function Timeline() {
                 <p className="mt-4 text-xs xs:text-sm leading-relaxed text-slate-300">{item.description}</p>
 
                 <ul className="mt-4 space-y-2.5 xs:space-y-3 text-xs xs:text-sm text-slate-300 bg-white/[0.02] border border-white/5 rounded-xl xs:rounded-2xl p-4 xs:p-5">
-                  {(item.points ?? []).map((point) => (
+                  {item.points.map((point) => (
                     <li key={point} className="flex gap-3">
                       <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-cyan-400" />
                       <span>{point}</span>
@@ -87,7 +87,7 @@ export default function Timeline() {
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
                 transition={{ duration: 0.6, delay: index * 0.15 }}
-                className="group rounded-xl xs:rounded-2xl border border-white/8 bg-slate-900/30 p-5 xs:p-6 hover:bg-slate-900/50 transition-colors duration-300 hover:border-cyan-400/15 hover:shadow-[0_0_20px_rgba(34,211,238,0.06)]"
+                className="group rounded-xl xs:rounded-2xl border border-white/8 bg-slate-900/30 p-5 xs:p-6 hover:bg-slate-900/50 transition-all duration-300 hover:border-cyan-400/15 hover:shadow-[0_0_20px_rgba(34,211,238,0.06)]"
               >
                 <div className="flex items-start gap-4 xs:gap-5">
                   <div className="flex h-12 w-12 xs:h-14 xs:w-14 flex-shrink-0 items-center justify-center rounded-xl xs:rounded-2xl bg-gradient-to-br from-cyan-500/20 to-transparent border border-cyan-500/10 text-cyan-300 shadow-inner group-hover:scale-105 transition-transform duration-300">

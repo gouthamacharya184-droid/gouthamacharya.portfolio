@@ -1,102 +1,73 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-/**
- * config.js — Production-grade environment configuration
- *
- * All variables have safe fallback defaults so the server never crashes on
- * startup due to a missing env var. Render and Vercel set their own PORT
- * dynamically — we never hardcode it.
- *
- * Environment variables to set in your Render dashboard:
- *   NODE_ENV=production
- *   PORT         (automatically set by Render — do not override)
- *   FRONTEND_URL=https://your-vercel-domain.vercel.app
- *   GROQ_API_KEY=your_groq_key
- *   JWT_SECRET=at_least_32_random_chars
- *   WHATSAPP_NUMBER=91xxxxxxxxxx (digits only)
- *   PHONE_NUMBER=91xxxxxxxxxx (digits only)
- *   GITHUB_URL=https://github.com/your-username
- *   SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASS, RECIPIENT_EMAIL (optional)
- */
-
-function optionalEnv(key, fallback = "") {
+function requireEnv(key) {
   const value = process.env[key];
-  if (!value || value.trim() === "") return fallback.trim();
+  if (!value || value.trim() === "") {
+    throw new Error(
+      `[config] Missing required environment variable: ${key}\n` +
+      `  → Copy backend/.env.example to backend/.env and fill in the value.`
+    );
+  }
   return value.trim();
 }
 
-// ── Server ───────────────────────────────────────────────────────────────────
-// Render assigns PORT dynamically. Local dev default is 10000.
-const PORT         = optionalEnv("PORT", "10000");
-const NODE_ENV     = optionalEnv("NODE_ENV", "development");
+function optionalEnv(key, fallback = "") {
+  return (process.env[key] || fallback).trim();
+}
 
-// ── CORS ─────────────────────────────────────────────────────────────────────
-// Set FRONTEND_URL in your Render dashboard to your Vercel domain.
-// Multiple origins: comma-separated. Wildcard "*" allows all origins.
-const FRONTEND_URL = optionalEnv("FRONTEND_URL", "*");
+const PORT         = requireEnv("PORT");
+const FRONTEND_URL = requireEnv("FRONTEND_URL");
+const GROQ_KEY     = requireEnv("GROQ_API_KEY");
+const WHATSAPP_NUM = requireEnv("WHATSAPP_NUMBER");
+const GITHUB_RAW   = requireEnv("GITHUB_URL");
+const JWT_SECRET   = requireEnv("JWT_SECRET");
 
-// ── AI / Groq ─────────────────────────────────────────────────────────────────
-const GROQ_KEY     = optionalEnv("GROQ_API_KEY", "");
-
-// ── Contact Links ─────────────────────────────────────────────────────────────
-// Auto-sanitize: strip all non-digit chars (handles +, spaces, dashes)
-const RAW_WA       = optionalEnv("WHATSAPP_NUMBER", "919000000000");
-const RAW_PHONE    = optionalEnv("PHONE_NUMBER", "919000000000");
-const WHATSAPP_NUM = RAW_WA.replace(/\D/g, "") || "919000000000";
-const PHONE_NUM    = RAW_PHONE.replace(/\D/g, "") || "919000000000";
-
-// ── GitHub ────────────────────────────────────────────────────────────────────
-const GITHUB_RAW   = optionalEnv("GITHUB_URL", "https://github.com/gouthamacharya184-droid");
-const GITHUB_URL   = GITHUB_RAW.startsWith("http") ? GITHUB_RAW : `https://${GITHUB_RAW}`;
-
-// ── Security ──────────────────────────────────────────────────────────────────
-const RAW_JWT    = optionalEnv("JWT_SECRET", "goutham_portfolio_jwt_secret_key_minimum_32_chars_long_default");
-const JWT_SECRET = RAW_JWT.length >= 32
-  ? RAW_JWT
-  : "goutham_portfolio_jwt_secret_key_minimum_32_chars_long_default";
-
-// SECURITY: In production, reject the hardcoded fallback JWT secret.
-if (NODE_ENV === "production" && JWT_SECRET === "goutham_portfolio_jwt_secret_key_minimum_32_chars_long_default") {
-  // Don't crash — admin routes are the only JWT-protected ones.
-  // But warn loudly so it's visible in Render logs.
-  console.error(
-    "[SECURITY] JWT_SECRET is set to the DEFAULT insecure value in production! " +
-    "Set a strong random JWT_SECRET in your Render environment variables."
+if (!/^\d{7,15}$/.test(WHATSAPP_NUM)) {
+  throw new Error(
+    `[config] WHATSAPP_NUMBER must contain only digits (7–15 chars). ` +
+    `Got: "${WHATSAPP_NUM.slice(0, 4)}..." — remove any +, spaces, or country code prefix.`
   );
 }
 
-const ADMIN_KEY  = optionalEnv("ADMIN_API_KEY", "");
+if (!GITHUB_RAW.startsWith("https://github.com/")) {
+  throw new Error(
+    `[config] GITHUB_URL must start with "https://github.com/". ` +
+    `Got a value that does not match. Check your .env file.`
+  );
+}
 
-// ── SMTP (optional) ───────────────────────────────────────────────────────────
-const SMTP_HOST   = optionalEnv("SMTP_HOST", "");
+if (JWT_SECRET.length < 32) {
+  throw new Error(
+    `[config] JWT_SECRET is too short (${JWT_SECRET.length} chars). ` +
+    `Use at least 32 characters. Generate with:\n` +
+    `  node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`
+  );
+}
+
+const SMTP_HOST   = optionalEnv("SMTP_HOST");
 const SMTP_PORT   = optionalEnv("SMTP_PORT", "465");
 const SMTP_SECURE = optionalEnv("SMTP_SECURE", "true");
-const SMTP_USER   = optionalEnv("SMTP_USER", "");
-const SMTP_PASS   = optionalEnv("SMTP_PASS", "");
-const RECIPIENT   = optionalEnv("RECIPIENT_EMAIL", "");
-const NGROK_URL   = optionalEnv("NGROK_URL", "");
+const SMTP_USER   = optionalEnv("SMTP_USER");
+const SMTP_PASS   = optionalEnv("SMTP_PASS");
+const RECIPIENT   = optionalEnv("RECIPIENT_EMAIL");
+const NGROK_URL   = optionalEnv("NGROK_URL");
+const ADMIN_KEY   = optionalEnv("ADMIN_API_KEY");
 
-const smtpConfigured = Boolean(SMTP_HOST && SMTP_USER && SMTP_PASS && RECIPIENT);
+const smtpConfigured =
+  SMTP_HOST && SMTP_USER && SMTP_PASS && RECIPIENT;
 
-if (!smtpConfigured && NODE_ENV !== "production") {
+if (!smtpConfigured) {
   console.warn(
     "\n⚠️  [config] SMTP is not fully configured — contact form emails will not send.\n" +
     "   Set SMTP_HOST, SMTP_USER, SMTP_PASS, and RECIPIENT_EMAIL in backend/.env.\n"
   );
 }
 
-if (!GROQ_KEY && NODE_ENV !== "production") {
-  console.warn(
-    "\n⚠️  [config] GROQ_API_KEY is not set — AI chat will be unavailable.\n" +
-    "   Set GROQ_API_KEY in backend/.env or your Render environment variables.\n"
-  );
-}
-
 export const config = {
-  port:            Number(PORT) || 8787,
-  nodeEnv:         NODE_ENV,
-  isProduction:    NODE_ENV === "production",
+  port:            Number(PORT),
+  nodeEnv:         optionalEnv("NODE_ENV", "development"),
+  isProduction:    optionalEnv("NODE_ENV", "development") === "production",
 
   frontendUrl:     FRONTEND_URL,
   ngrokUrl:        NGROK_URL,
@@ -106,13 +77,12 @@ export const config = {
   adminApiKey:     ADMIN_KEY,
 
   whatsappNumber:  WHATSAPP_NUM,
-  phoneNumber:     PHONE_NUM,
-  githubUrl:       GITHUB_URL,
+  githubUrl:       GITHUB_RAW,
 
   smtp: smtpConfigured
     ? {
         host:   SMTP_HOST,
-        port:   Number(SMTP_PORT) || 465,
+        port:   Number(SMTP_PORT),
         secure: SMTP_SECURE === "true",
         user:   SMTP_USER,
         pass:   SMTP_PASS,
@@ -123,10 +93,4 @@ export const config = {
   smtpConfigured,
 };
 
-// Use structured output rather than console.info for consistency.
-// In production, Render captures stdout — console.info is acceptable here.
-console.info(
-  `[config] Loaded ✓ — env=${config.nodeEnv}, port=${config.port}, ` +
-  `smtp=${smtpConfigured ? "enabled" : "disabled"}, ` +
-  `groq=${GROQ_KEY ? "configured" : "missing"}`
-);
+console.info(`[config] Loaded ✓ — env=${config.nodeEnv}, port=${config.port}, smtp=${smtpConfigured ? "enabled" : "disabled"}`);

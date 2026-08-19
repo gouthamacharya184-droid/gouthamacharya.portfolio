@@ -8,17 +8,13 @@
  */
 
 import { usePortfolio, resolveIcon } from "../hooks/usePortfolio";
-import { Phone } from "lucide-react";
 
 export default function Footer({ apiBaseUrl }) {
   const { portfolio } = usePortfolio();
-  const githubUrl = portfolio?.profile?.github ?? "https://github.com";
+  const githubUrl  = portfolio?.profile?.github ?? "https://github.com";
   const socialLinks = portfolio?.socialLinks ?? [];
   const backendUrl = (apiBaseUrl ?? "").replace(/\/$/, "");
   const year = new Date().getFullYear();
-
-  const instagramLink = socialLinks.find(({ label }) => label.toLowerCase().includes("instagram"));
-  const linkedinLink = socialLinks.find(({ label }) => label.toLowerCase().includes("linkedin"));
 
   return (
     <footer className="relative border-t border-white/[0.06] bg-[#010614] pt-10 xs:pt-12 pb-8 overflow-hidden z-20">
@@ -36,35 +32,23 @@ export default function Footer({ apiBaseUrl }) {
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             aria-label="Goutham Acharya — back to top"
           >
-            <div className="h-9 w-9 rounded-xl bg-white/5 border border-cyan-400/20 shadow-[0_0_20px_rgba(34,211,238,0.1)] flex items-center justify-center p-1.5 transition-all group-hover:scale-105 group-hover:border-cyan-400/40">
-              <img
-                src="/favicon.png?v=4"
-                alt="GA Monogram"
-                className="h-6 w-6 object-contain transition-transform group-hover:scale-110"
-              />
+            <div className="h-10 w-10 rounded-xl bg-white/5 border border-cyan-400/20 shadow-[0_0_20px_rgba(34,211,238,0.1)] flex items-center justify-center transition-all group-hover:scale-105 group-hover:border-cyan-400/40">
+              <div className="h-6 w-6 rounded-lg bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.35),rgba(15,23,42,0.8))] border border-cyan-300/20 flex items-center justify-center text-cyan-300 font-black text-[10px]">
+                GA
+              </div>
             </div>
             <div>
               <div className="text-base font-bold tracking-tight text-white group-hover:text-cyan-300 transition-colors">
                 Goutham Acharya
               </div>
-              <div className="text-slate-500 text-[9px] tracking-[0.3em] uppercase mt-0.5">AI & ML ENGINEER</div>
+              <div className="text-slate-500 text-[9px] tracking-[0.3em] uppercase mt-0.5">AI · ML</div>
             </div>
           </a>
 
           {/* Social Links — from backend API */}
           <div className="flex flex-row flex-wrap items-center justify-center sm:justify-start gap-4 xs:gap-5 sm:gap-7 w-full sm:w-auto">
 
-            {/* 1. Call — via backend redirect */}
-            <a
-              href={`${backendUrl}/api/social/call`}
-              aria-label="Call contact"
-              className="flex flex-col items-center gap-1.5 text-slate-400 hover:text-cyan-300 transition-colors"
-            >
-              <Phone size={20} strokeWidth={1.8} aria-hidden="true" />
-              <span className="text-[10px] font-medium tracking-wide">Call</span>
-            </a>
-
-            {/* 2. GitHub — from backend profile */}
+            {/* GitHub — from backend profile */}
             <a
               href={githubUrl}
               target="_blank"
@@ -78,43 +62,32 @@ export default function Footer({ apiBaseUrl }) {
               <span className="text-[10px] font-medium tracking-wide">GitHub</span>
             </a>
 
-            {/* 3. Instagram — from backend socialLinks */}
-            {(() => {
-              if (!instagramLink) return null;
-              const Icon = resolveIcon(instagramLink.icon);
+            {/* Dynamic social links from backend — GitHub is rendered separately above */}
+            {socialLinks
+              .filter(({ label }) => label.toLowerCase() !== "github")
+              .map(({ label, href, icon: iconName }) => {
+              const Icon = resolveIcon(iconName);
+              const hoverClass = label.toLowerCase().includes("linkedin")
+                ? "hover:text-blue-400"
+                : label.toLowerCase().includes("instagram")
+                ? "hover:text-pink-400"
+                : "hover:text-cyan-300";
               return (
                 <a
-                  href={instagramLink.href}
+                  key={label}
+                  href={href}
                   target="_blank"
                   rel="noreferrer"
-                  aria-label="Instagram profile"
-                  className="flex flex-col items-center gap-1.5 text-slate-400 hover:text-pink-400 transition-colors"
+                  aria-label={`${label} profile`}
+                  className={`flex flex-col items-center gap-1.5 text-slate-400 ${hoverClass} transition-colors`}
                 >
                   {Icon && <Icon size={20} strokeWidth={1.8} aria-hidden="true" />}
-                  <span className="text-[10px] font-medium tracking-wide">Instagram</span>
+                  <span className="text-[10px] font-medium tracking-wide">{label}</span>
                 </a>
               );
-            })()}
+            })}
 
-            {/* 4. LinkedIn — from backend socialLinks */}
-            {(() => {
-              if (!linkedinLink) return null;
-              const Icon = resolveIcon(linkedinLink.icon);
-              return (
-                <a
-                  href={linkedinLink.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label="LinkedIn profile"
-                  className="flex flex-col items-center gap-1.5 text-slate-400 hover:text-blue-400 transition-colors"
-                >
-                  {Icon && <Icon size={20} strokeWidth={1.8} aria-hidden="true" />}
-                  <span className="text-[10px] font-medium tracking-wide">LinkedIn</span>
-                </a>
-              );
-            })()}
-
-            {/* 5. WhatsApp — via backend redirect */}
+            {/* WhatsApp — via backend redirect */}
             <a
               href={`${backendUrl}/api/social/whatsapp`}
               target="_blank"
@@ -128,7 +101,7 @@ export default function Footer({ apiBaseUrl }) {
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
               >
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.414 0 .004 5.412.001 12.05c0 2.123.554 4.197 1.604 6.046L0 24l6.101-1.601a11.801 11.801 0 005.947 1.606h.005c6.634 0 12.043-5.412 12.046-12.051a11.81 11.81 0 00-3.447-8.504z" />
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.414 0 .004 5.412.001 12.05c0 2.123.554 4.197 1.604 6.046L0 24l6.101-1.601a11.801 11.801 0 005.947 1.606h.005c6.634 0 12.043-5.412 12.046-12.051a11.81 11.81 0 00-3.447-8.504z"/>
               </svg>
               <span className="text-[10px] font-medium tracking-wide">WhatsApp</span>
             </a>
@@ -144,7 +117,7 @@ export default function Footer({ apiBaseUrl }) {
           <p className="italic text-center xs:text-right">
             Crafting intelligent experiences at the intersection of{" "}
             <span className="text-cyan-500/60 font-semibold not-italic">AI</span>
-            {" & "}
+            {" "}&amp;{" "}
             <span className="text-cyan-500/60 font-semibold not-italic">Machine Learning</span>.
           </p>
         </div>

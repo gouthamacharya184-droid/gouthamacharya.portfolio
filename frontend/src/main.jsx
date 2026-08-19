@@ -1,22 +1,18 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import ErrorBoundary from "./components/ErrorBoundary";
 import "./styles.css";
 
-// Deferred storage cleanup
-window.addEventListener("load", () => {
+// ── Wipe ALL storage on every page load ──────────────────────────────────────
+// This runs synchronously before React mounts — storage is guaranteed clean
+// before any component reads from it. Covers F5, Ctrl+F5, browser restart,
+// and tab close/reopen. Console output intentionally removed from production.
+(function clearAllChatStorage() {
+  try { localStorage.clear(); } catch { /* ignore */ }
   try { sessionStorage.clear(); } catch { /* ignore */ }
-  try { indexedDB.deleteDatabase("portfolio_ai_db"); } catch { /* ignore */ }
-}, { once: true });
+  try { indexedDB.deleteDatabase('portfolio_ai_db'); } catch { /* ignore */ }
+})();
 
-const rootEl = document.getElementById("root");
-if (rootEl) {
-  ReactDOM.createRoot(rootEl).render(
-    <React.StrictMode>
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>
-    </React.StrictMode>
-  );
-}
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <App />
+);

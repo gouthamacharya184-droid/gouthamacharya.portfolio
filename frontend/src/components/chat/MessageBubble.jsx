@@ -102,7 +102,7 @@ export default function MessageBubble({
                   onClick={() => onToggleSpeech(msg.id, msg.content)}
                   className={`h-7 w-7 rounded-lg border flex items-center justify-center transition-all cursor-pointer ${
                     isSpeaking
-                      ? 'bg-cyan-500/20 border-cyan-400/30 text-cyan-400'
+                      ? 'bg-cyan-500/20 border-cyan-400/30 text-cyan-400 animate-pulse'
                       : 'bg-white/5 border-white/10 text-slate-500 hover:text-cyan-400 hover:border-cyan-400/30'
                   }`}
                   aria-label={isSpeaking ? 'Stop speech' : 'Speak message'}

@@ -16,18 +16,14 @@ export default defineConfig(({ mode }) => {
   // Load env vars for the current mode (development/production)
   const env = loadEnv(mode, process.cwd(), "VITE_");
 
-  // Allow all hosts so phones/tablets on the same WiFi can open the dev server
-  // (e.g. http://192.168.x.x:5173 from a mobile device).
-  // In production there is no Vite dev server, so this only affects local dev.
-  const allowedHosts = env.VITE_ALLOWED_HOST
-    ? ["localhost", "127.0.0.1", env.VITE_ALLOWED_HOST]
-    : "all";
-
-  // Only override HMR clientPort when behind an HTTPS reverse proxy (e.g. ngrok).
-  // Locally, leave hmr unset so Vite uses the same port as the dev server (5173).
-  const hmrConfig = env.VITE_ALLOWED_HOST
-    ? { clientPort: 443 }
-    : {};
+  // Build the allowed hosts list dynamically
+  const allowedHosts = [
+    "localhost",
+    "127.0.0.1",
+  ];
+  if (env.VITE_ALLOWED_HOST) {
+    allowedHosts.push(env.VITE_ALLOWED_HOST);
+  }
 
   return {
     plugins: [react()],
@@ -36,7 +32,10 @@ export default defineConfig(({ mode }) => {
       port:        5173,
       strictPort:  true,
       allowedHosts,
-      hmr: hmrConfig,
+      hmr: {
+        // Required for HMR to work through an HTTPS reverse proxy (ngrok)
+        clientPort: 443,
+      },
       proxy: {
         // During dev, all /api/* requests are forwarded to the backend.
         // This keeps the frontend origin-agnostic and avoids CORS in dev.
@@ -47,23 +46,8 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
-    build: {
-      chunkSizeWarningLimit: 800,
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            "vendor-react": ["react", "react-dom"],
-            "vendor-framer": ["framer-motion"],
-            "vendor-markdown": ["react-markdown", "react-syntax-highlighter"],
-            "vendor-icons": ["lucide-react"],
-          },
-        },
-      },
-    },
     preview: {
-      host: "0.0.0.0",
       port: 4173,
-      strictPort: true,
     },
   };
 });

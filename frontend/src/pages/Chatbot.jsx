@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Bot, Sparkles, X, Plus, Maximize2 } from 'lucide-react';
 import { useChatContext } from '../hooks/useChat';
 import { useSpeech } from '../hooks/useSpeech';
+import { checkChatStatus } from '../utils/chatApi';
 
 import ChatLayout from '../layouts/ChatLayout';
 import ChatMessages from '../components/chat/ChatMessages';
@@ -15,13 +16,7 @@ const PREF_KEY = 'portfolio_prefs_v1';
 function loadPrefs(defaultBaseUrl) {
   try {
     const raw = localStorage.getItem(PREF_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-        delete parsed.baseUrl;
-        return { baseUrl: defaultBaseUrl, speechRate: 1.0, ...parsed };
-      }
-    }
+    if (raw) return { baseUrl: defaultBaseUrl, speechRate: 1.0, ...JSON.parse(raw) };
   } catch { /* ignore */ }
   return { baseUrl: defaultBaseUrl, speechRate: 1.0 };
 }
@@ -31,18 +26,8 @@ function savePrefs(prefs) {
 }
 
 export default function ChatbotPage({ apiBaseUrl }) {
-  // In production: apiBaseUrl = VITE_API_BASE_URL (the Render backend URL).
-  // In development: apiBaseUrl = "" and Vite proxy handles /api/* routes.
-  // NEVER fall back to window.location.origin (Vercel domain) — that would
-  // route API calls to the frontend host instead of the backend.
-  const defaultBaseUrl = (apiBaseUrl ?? "").replace(/\/$/, "");
+  const defaultBaseUrl = (apiBaseUrl || '').replace(/\/$/, '') || window.location.origin;
   const [preferences, setPreferences] = useState(() => loadPrefs(defaultBaseUrl));
-
-  useEffect(() => {
-    if (defaultBaseUrl && preferences.baseUrl !== defaultBaseUrl) {
-      setPreferences(prev => ({ ...prev, baseUrl: defaultBaseUrl }));
-    }
-  }, [defaultBaseUrl]);
 
   const baseUrl = preferences.baseUrl;
   const speechRate = preferences.speechRate;
@@ -67,12 +52,11 @@ export default function ChatbotPage({ apiBaseUrl }) {
     handleClear,
     isTyping,
     handleSend,
-    aiStatus,
-    recheckStatus,
     telemetryLogs,
     setTelemetryLogs,
     activeArtifact,
     setActiveArtifact,
+    addLog,
   } = useChatContext();
 
   const { speakingMsgId, handleToggleSpeech, stopSpeech } = useSpeech();
@@ -80,6 +64,7 @@ export default function ChatbotPage({ apiBaseUrl }) {
   // UI state
   const [isOpen, setIsOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [aiStatus, setAiStatus] = useState('checking');
   const [unread, setUnread] = useState(0);
 
   // Widget scroll
@@ -92,9 +77,17 @@ export default function ChatbotPage({ apiBaseUrl }) {
     if (isOpen && !isFullscreen) scrollToWidgetBottom();
   }, [messages, isTyping, isOpen, isFullscreen, scrollToWidgetBottom]);
 
-  // Bug #3 Fix: The 60-second polling useEffect that lived here has been removed.
-  // aiStatus is now managed centrally in ChatProvider (useChat.jsx) and
-  // consumed via context above, eliminating the duplicate API request on mount.
+  // ── Status check — runs on mount AND every 60s ──────────────────────────────
+  useEffect(() => {
+    let cancelled = false;
+    const check = async () => {
+      const status = await checkChatStatus(baseUrl);
+      if (!cancelled) setAiStatus(status);
+    };
+    check();
+    const interval = setInterval(check, 60_000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, [baseUrl]);
 
   // Unread badge
   useEffect(() => {
@@ -111,22 +104,11 @@ export default function ChatbotPage({ apiBaseUrl }) {
     if (isOpen || isFullscreen) setUnread(0);
   }, [isOpen, isFullscreen]);
 
-  // Body scroll lock — only in fullscreen mode or on mobile screens where drawer takes full screen
+  // Body scroll lock
   useEffect(() => {
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-    const shouldLock = isFullscreen || (isOpen && isMobile);
-    if (shouldLock) {
-      document.body.classList.add('body-scroll-locked');
-    }
-    return () => {
-      document.body.classList.remove('body-scroll-locked');
-    };
+    document.body.style.overflow = (isOpen || isFullscreen) ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
   }, [isOpen, isFullscreen]);
-
-  // Safety net: remove scroll lock on unmount
-  useEffect(() => {
-    return () => { document.body.classList.remove('body-scroll-locked'); };
-  }, []);
 
   // Speech cancel on close
   useEffect(() => {
@@ -153,11 +135,16 @@ export default function ChatbotPage({ apiBaseUrl }) {
     document.body.removeChild(a); URL.revokeObjectURL(url);
   }, [messages]);
 
-  // Bug #5 Fix: The previous expression was `aiStatus !== 'offline' || true`
-  // which is a tautology — always evaluates to true regardless of status.
-  // Now the FAB is always shown (the offline state is communicated inside
-  // the widget header, not by hiding the button).
-  const statusResolved = true;
+  // Only show the FAB when AI is online (ready to respond)
+  const statusResolved = aiStatus === 'online';
+
+  // Auto-close chat if it goes offline
+  useEffect(() => {
+    if (aiStatus === 'offline') {
+      setIsOpen(false);
+      setIsFullscreen(false);
+    }
+  }, [aiStatus]);
 
   return (
     <>
@@ -228,13 +215,8 @@ export default function ChatbotPage({ apiBaseUrl }) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-            className="chat-widget-container fixed z-[110] flex flex-col overflow-hidden"
+            className="fixed inset-0 z-[110] flex flex-col md:inset-auto md:fixed md:bottom-[5.5rem] md:right-6 md:w-[440px] md:h-[680px] md:max-h-[calc(100vh-7rem)] md:rounded-[28px] overflow-hidden"
             style={{
-              // Mobile: fills screen below fixed navbar (64px) with safe-area support
-              top: 'calc(max(env(safe-area-inset-top, 0px), 0px) + 64px)',
-              bottom: 'env(safe-area-inset-bottom, 0px)',
-              left: 'env(safe-area-inset-left, 0px)',
-              right: 'env(safe-area-inset-right, 0px)',
               background: 'linear-gradient(180deg, rgba(7,18,37,0.98) 0%, rgba(3,5,8,0.99) 100%)',
               border: '1px solid rgba(255,255,255,0.06)',
               boxShadow: '0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(34,211,238,0.06), inset 0 1px 0 rgba(255,255,255,0.04)',
@@ -263,8 +245,8 @@ export default function ChatbotPage({ apiBaseUrl }) {
                   <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-cyan-500/15 to-violet-500/15 border border-cyan-400/20 flex items-center justify-center shadow-[0_0_15px_rgba(34,211,238,0.1)]">
                     <Bot size={20} className="text-cyan-400" />
                   </div>
-                  <div className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-[#071225] transition-all ${
-                    aiStatus === 'online' ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse' : aiStatus === 'offline' ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]' : aiStatus === 'warming' ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)] animate-pulse' : 'bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)] animate-pulse'
+                  <div className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#071225] ${
+                    aiStatus === 'online' ? 'bg-emerald-400 animate-pulse' : aiStatus === 'offline' ? 'bg-red-400' : 'bg-amber-400 animate-pulse'
                   }`} />
                 </div>
                 <div>
@@ -272,20 +254,11 @@ export default function ChatbotPage({ apiBaseUrl }) {
                     <span className="text-[13px] font-bold text-white tracking-tight">Portfolio AI</span>
                     <Sparkles size={11} className="text-cyan-400 opacity-60" />
                   </div>
-                  <div className="flex items-center gap-2 -mt-0.5">
-                    <span className={`text-[9px] uppercase tracking-wider font-bold block ${
-                      aiStatus === 'online' ? 'text-emerald-400' : aiStatus === 'offline' ? 'text-rose-400' : aiStatus === 'warming' ? 'text-amber-400' : 'text-cyan-400'
-                    }`}>
-                      {aiStatus === 'online' ? 'Online' : aiStatus === 'offline' ? 'Offline' : aiStatus === 'warming' ? 'Waking up...' : 'Connecting…'}
-                    </span>
-                    <button
-                      onClick={recheckStatus}
-                      className="text-[9px] text-slate-400 hover:text-cyan-400 underline transition-colors cursor-pointer"
-                      title="Recheck status"
-                    >
-                      Recheck
-                    </button>
-                  </div>
+                  <span className={`text-[9px] uppercase tracking-wider font-bold block -mt-0.5 ${
+                    aiStatus === 'online' ? 'text-emerald-400' : aiStatus === 'offline' ? 'text-red-400' : 'text-amber-400'
+                  }`}>
+                    {aiStatus === 'online' ? 'Online' : aiStatus === 'offline' ? 'Offline' : 'Connecting…'}
+                  </span>
                 </div>
               </div>
 
@@ -316,31 +289,13 @@ export default function ChatbotPage({ apiBaseUrl }) {
               </div>
             </div>
 
-            {/* Warming / Offline Warning Banner */}
-            {aiStatus === 'warming' && (
-              <div className="flex items-center justify-between px-4 py-2.5 bg-amber-500/10 border-b border-amber-500/20 flex-shrink-0">
-                <div className="flex items-center gap-2">
-                  <span className="inline-block h-2 w-2 rounded-full bg-amber-400 animate-ping shrink-0" />
-                  <span className="text-amber-300 text-[11px] font-medium">
-                    Server is waking up (Render cold start)... Please allow a few seconds.
-                  </span>
-                </div>
-              </div>
-            )}
+            {/* Offline Warning Banner */}
             {aiStatus === 'offline' && (
-              <div className="flex items-center justify-between px-4 py-2.5 bg-rose-500/10 border-b border-rose-500/20 flex-shrink-0">
-                <div className="flex items-center gap-2">
-                  <span className="inline-block h-2 w-2 rounded-full bg-rose-500 shrink-0" />
-                  <span className="text-rose-400 text-[11px] font-medium">
-                    AI assistant is currently offline.
-                  </span>
-                </div>
-                <button
-                  onClick={recheckStatus}
-                  className="px-2.5 py-1 text-[10px] font-bold text-rose-300 hover:text-white bg-rose-500/20 hover:bg-rose-500/40 border border-rose-500/30 rounded-lg transition-all cursor-pointer"
-                >
-                  Retry Connection
-                </button>
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-rose-500/10 border-b border-rose-500/20 flex-shrink-0">
+                <span className="inline-block h-2 w-2 rounded-full bg-rose-500 shrink-0" />
+                <span className="text-rose-400 text-[11px] font-medium">
+                  AI assistant is currently offline. Please try again later.
+                </span>
               </div>
             )}
 
@@ -348,7 +303,7 @@ export default function ChatbotPage({ apiBaseUrl }) {
             {messages.length <= 1 ? (
               <div className="flex-1 overflow-y-auto px-4 py-4 custom-scrollbar flex flex-col">
                 <div className="my-auto w-full">
-                  <EmptyState onSend={handleSend} fullscreen={false} disabled={aiStatus === 'offline'} />
+                  <EmptyState onSend={handleSend} fullscreen={false} />
                 </div>
               </div>
             ) : (
@@ -364,11 +319,8 @@ export default function ChatbotPage({ apiBaseUrl }) {
               />
             )}
 
-            {/* Widget Input — padding-bottom accounts for iOS home indicator */}
-            <div
-              className="flex-shrink-0 px-4 pt-3 border-t border-white/[0.04] bg-[#020407]/40 backdrop-blur-xl"
-              style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
-            >
+            {/* Widget Input */}
+            <div className="flex-shrink-0 px-4 pb-4 pt-3 border-t border-white/[0.04] bg-[#020407]/40 backdrop-blur-xl">
               <ChatInput
                 onSend={handleSend}
                 isTyping={isTyping}
@@ -392,7 +344,6 @@ export default function ChatbotPage({ apiBaseUrl }) {
             whileHover={{ scale: 1.08, y: -3 }}
             whileTap={{ scale: 0.88 }}
             onClick={() => setIsOpen(o => !o)}
-            title={isOpen ? 'Close AI assistant' : `Portfolio AI Assistant (${aiStatus === 'online' ? 'Online' : aiStatus === 'offline' ? 'Offline' : 'Connecting…'})`}
             aria-label={isOpen ? 'Close AI assistant' : 'Open AI assistant'}
             className="relative h-12 w-12 sm:h-14 sm:w-14 rounded-2xl flex items-center justify-center cursor-pointer border-none outline-none z-10"
             style={{
@@ -411,20 +362,6 @@ export default function ChatbotPage({ apiBaseUrl }) {
               backdropFilter: 'blur(12px)',
             }}
           >
-            {/* Realtime Status Indicator Badge on FAB */}
-            {!isOpen && (
-              <span
-                className={`absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full border-2 border-[#030508] transition-all duration-300 z-20 ${
-                  aiStatus === 'online'
-                    ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse'
-                    : aiStatus === 'offline'
-                      ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.9)]'
-                      : 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.9)] animate-pulse'
-                }`}
-                title={`Status: ${aiStatus.toUpperCase()}`}
-              />
-            )}
-
             <AnimatePresence mode="wait">
               {isOpen ? (
                 <motion.div
@@ -444,7 +381,7 @@ export default function ChatbotPage({ apiBaseUrl }) {
                   exit={{ rotate: -90, opacity: 0, scale: 0.5 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                 >
-                  <Bot size={24} className={aiStatus === 'offline' ? 'text-slate-400' : 'text-cyan-400'} />
+                  <Bot size={24} className={aiStatus === 'offline' ? 'text-slate-500' : 'text-cyan-400'} />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -458,7 +395,7 @@ export default function ChatbotPage({ apiBaseUrl }) {
                   animate={{ scale: 1, y: 0 }}
                   exit={{ scale: 0, y: 10 }}
                   transition={{ type: 'spring', stiffness: 500, damping: 25 }}
-                  className="absolute -bottom-1 -left-1 h-5 min-w-[1.25rem] px-1 rounded-full bg-gradient-to-br from-red-500 to-rose-600 text-white text-[10px] font-bold flex items-center justify-center border-2 border-[#030508] shadow-lg z-20"
+                  className="absolute -top-2 -right-2 h-6 min-w-[1.5rem] px-1.5 rounded-full bg-gradient-to-br from-red-500 to-rose-600 text-white text-[11px] font-bold flex items-center justify-center border-2 border-[#030508] shadow-lg"
                 >
                   {unread}
                 </motion.span>

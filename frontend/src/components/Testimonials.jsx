@@ -24,7 +24,7 @@ export default function Testimonials() {
   }
 
   const certifications = portfolio?.certifications ?? [];
-  const achievements = portfolio?.achievements ?? [];
+  const achievements   = portfolio?.achievements   ?? [];
 
   return (
     <Section
@@ -47,24 +47,19 @@ export default function Testimonials() {
             <motion.div
               key={cert.title}
               variants={fadeUp}
-              className={`card-premium group relative rounded-2xl border ${cert.border} bg-white/[0.03] p-5 hover:bg-white/[0.06] transition-colors duration-300 flex flex-col justify-between gap-4`}
+              className={`group relative rounded-2xl border ${cert.border} bg-white/[0.03] p-5 hover:bg-white/[0.06] transition-all duration-300 hover:shadow-[0_0_24px_rgba(34,211,238,0.08)] flex flex-col gap-3`}
             >
-              {/* Header row: Icon left, Certified badge right */}
-              <div className="flex items-center justify-between gap-2">
-                {Icon ? (
-                  <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${cert.bg} ${cert.border} border ${cert.color} group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon size={20} strokeWidth={1.8} />
-                  </div>
-                ) : <div />}
-                <span className={`text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-full ${cert.bg} ${cert.color} border ${cert.border} shrink-0`}>
-                  Certified
-                </span>
-              </div>
-
-              {/* Title & Issuer */}
+              {Icon && (
+                <div className={`inline-flex h-10 w-10 items-center justify-center rounded-xl ${cert.bg} ${cert.border} border ${cert.color} group-hover:scale-110 transition-transform duration-300`}>
+                  <Icon size={20} strokeWidth={1.8} />
+                </div>
+              )}
               <div>
                 <p className="text-sm font-semibold text-white leading-snug">{cert.title}</p>
-                <p className="text-xs text-slate-400 mt-1 font-medium">{cert.issuer} · {cert.year}</p>
+                <p className="text-xs text-slate-500 mt-1">{cert.issuer} · {cert.year}</p>
+              </div>
+              <div className={`absolute top-3 right-3 text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-full ${cert.bg} ${cert.color} border ${cert.border}`}>
+                Certified
               </div>
             </motion.div>
           );
@@ -85,7 +80,7 @@ export default function Testimonials() {
             <motion.div
               key={item.title}
               variants={fadeUp}
-              className={`card-premium group relative rounded-2xl border ${item.border} bg-white/[0.03] p-6 hover:bg-white/[0.06] transition-colors duration-300 flex gap-4`}
+              className={`group relative rounded-2xl border ${item.border} bg-white/[0.03] p-6 hover:bg-white/[0.06] transition-all duration-300 flex gap-4`}
             >
               {Icon && (
                 <div className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${item.bg} ${item.border} border ${item.color} group-hover:scale-110 transition-transform duration-300`}>

@@ -1,40 +1,17 @@
-/**
- * Navbar.jsx — Main Navigation and Mobile Drawer
- *
- * Security architecture:
- *  - Links and section mappings are dynamic.
- *  - Handles scroll interception to avoid anchor redirection loops.
- *
- * Performance notes:
- *  - Global layout scroll progress is tracked via Framer Motion's useScroll hook.
- *  - Desktop navigation indicators animate using spring layout transition templates.
- *  - Mobile drawer includes focus locks and aria attributes for access compliance.
- */
-
-import React, { useState, useEffect, useRef, useMemo } from "react";
-import { motion, useScroll, AnimatePresence } from "framer-motion";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { usePortfolio } from "../hooks/usePortfolio";
 
-// Fallback navigation used during loading or if backend data is unavailable
-const FALLBACK_NAV = [
-  { label: "About", href: "#about" },
-  { label: "Experience", href: "#experience" },
-  { label: "Projects", href: "#projects" },
-  { label: "Skills", href: "#skills" },
-  { label: "Blog", href: "#blog" },
-  { label: "Contact", href: "#contact" },
-];
-
-// ── Hamburger Button UI Component ──────────────────────────────────────────────
-
+/* ── Animated Hamburger ─────────────────────────────────── */
 function HamburgerButton({ open, onClick }) {
   return (
     <button
+      type="button"
       onClick={onClick}
-      className={`touch-target relative h-10 w-10 flex flex-col justify-center gap-1 text-slate-300 hover:text-white transition-colors duration-200 cursor-pointer ${open ? "hamburger-open" : ""
-        }`}
+      className={`relative flex flex-col items-center justify-center gap-[5px] h-12 w-12 rounded-xl border border-white/10 bg-white/5 backdrop-blur-sm text-slate-200 hover:bg-white/10 transition-all duration-200 shrink-0 ${open ? "hamburger-open" : ""}`}
+      aria-label={open ? "Close navigation menu" : "Open navigation menu"}
       aria-expanded={open}
-      aria-label="Toggle navigation menu"
+      aria-controls="mobile-drawer"
     >
       <span className="hamburger-line" />
       <span className="hamburger-line" />
@@ -43,111 +20,104 @@ function HamburgerButton({ open, onClick }) {
   );
 }
 
-// ── Main Navbar ──────────────────────────────────────────────────────────────
-
 export default function Navbar() {
-  const [open, setOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("home");
-  const [scrolled, setScrolled] = useState(false);
-  const drawerRef = useRef(null);
   const { portfolio } = usePortfolio();
+  const navigation = portfolio?.navigation ?? [];
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState("home");
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const drawerRef = useRef(null);
 
-  // Derive navigation from backend data, fallback to hardcoded array during loading
-  const navigation = useMemo(
-    () => portfolio?.navigation ?? FALLBACK_NAV,
-    [portfolio]
-  );
-
-  const { scrollYProgress: scrollProgress } = useScroll();
-
+  // Scroll state + progress
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 24);
+      const total = document.body.scrollHeight - window.innerHeight;
+      setScrollProgress(total > 0 ? window.scrollY / total : 0);
     };
-
-    // Track intersection sections to update active states dynamically
-    const sections = ["home", "about", "experience", "projects", "skills", "testimonials", "blog", "contact"];
-    const observerOptions = {
-      root: null,
-      rootMargin: "-45% 0px -45% 0px", // Detect middle-aligned active folds
-      threshold: 0,
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setActiveSection(entry.target.id);
-        }
-      });
-    }, observerOptions);
-
-    sections.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      observer.disconnect();
-    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Keyboard close + scroll lock for drawer
+  // Active section via IntersectionObserver
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") setOpen(false);
-    };
+    const ids = ["home", ...navigation.map((n) => n.href.replace("#", ""))];
+    const observers = [];
+
+    ids.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setActiveSection(id); },
+        { rootMargin: "-40% 0px -55% 0px" }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+
+    return () => observers.forEach((obs) => obs.disconnect());
+  }, [navigation]);
+
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
     if (open) {
-      window.addEventListener("keydown", handleKeyDown);
-      document.body.classList.add("body-scroll-locked");
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+    } else {
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
     }
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      // Unconditional remove — idempotent (no-op if class isn't there).
-      // Avoids React Strict Mode double-invoke leaving the class stranded.
-      document.body.classList.remove("body-scroll-locked");
+      document.body.style.overflow = "";
+      document.body.style.touchAction = "";
     };
   }, [open]);
 
-  // Safety net: always remove scroll lock when Navbar unmounts
+  // Close drawer on Escape key
   useEffect(() => {
-    return () => {
-      document.body.classList.remove("body-scroll-locked");
+    const onKeyDown = (e) => {
+      if (e.key === "Escape" && open) {
+        setOpen(false);
+      }
     };
-  }, []);
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open]);
 
-  const handleNavClick = (e, href) => {
+  const closeDrawer = useCallback(() => setOpen(false), []);
+
+  const handleNavClick = useCallback((e, href) => {
     e.preventDefault();
     setOpen(false);
-    const target = document.querySelector(href);
-    if (target) {
-      // Offset matches sticky header constraints
-      const offset = 70;
-      const bodyRect = document.body.getBoundingClientRect().top;
-      const elementRect = target.getBoundingClientRect().top;
-      const elementPosition = elementRect - bodyRect;
-      const offsetPosition = elementPosition - offset;
+    document.body.style.overflow = "";
+    document.body.style.touchAction = "";
 
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: "smooth",
-      });
-    }
-  };
-
-  const closeDrawer = () => setOpen(false);
+    setTimeout(() => {
+      if (href === "#home") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      const element = document.getElementById(href.replace("#", ""));
+      if (element) {
+        const offset = 80;
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.scrollY - offset;
+        window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+      }
+    }, 150);
+  }, []);
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b border-white/[0.04] ${scrolled
-        ? "bg-[#010614]/80 backdrop-blur-md shadow-[0_4px_30px_rgba(0,0,0,0.4)]"
-        : "bg-transparent"
-        }`}
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? "bg-[#020817]/85 backdrop-blur-2xl border-b border-white/[0.06] shadow-[0_4px_30px_rgba(0,0,0,0.4)]"
+          : "bg-transparent"
+      }`}
     >
-      {/* Scroll Progress Bar */}
+      {/* ── Scroll Progress Bar ── */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-white/5 overflow-hidden">
         <motion.div
           className="h-full bg-gradient-to-r from-cyan-500 via-cyan-400 to-violet-500 scroll-progress"
@@ -156,6 +126,7 @@ export default function Navbar() {
       </div>
 
       <div className="mx-auto flex max-w-[75rem] items-center justify-between px-4 xs:px-6 sm:px-8 lg:px-6 xl:px-10 h-16 md:h-[70px]">
+
         {/* Logo */}
         <a
           href="#home"
@@ -163,25 +134,23 @@ export default function Navbar() {
           onClick={(e) => handleNavClick(e, "#home")}
           aria-label="Goutham Acharya — Home"
         >
-          <div className="h-10 w-10 xs:h-11 xs:w-11 rounded-xl bg-white/5 border border-cyan-400/25 shadow-[0_0_25px_rgba(34,211,238,0.12)] backdrop-blur-xl flex items-center justify-center p-2 transition-all duration-300 group-hover:scale-105 group-hover:border-cyan-400/50 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.25)] shrink-0">
-            <img
-              src="/favicon.png?v=4"
-              alt="GA Monogram"
-              className="h-6 w-6 xs:h-7 xs:w-7 object-contain transition-transform group-hover:scale-110"
-            />
+          <div className="h-10 w-10 xs:h-11 xs:w-11 md:h-12 md:w-12 rounded-xl bg-white/5 border border-cyan-400/25 shadow-[0_0_25px_rgba(34,211,238,0.12)] backdrop-blur-xl flex items-center justify-center transition-all duration-300 group-hover:scale-105 group-hover:border-cyan-400/50 group-hover:shadow-[0_0_30px_rgba(34,211,238,0.25)] shrink-0">
+            <div className="h-6 w-6 xs:h-7 xs:w-7 rounded-lg bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.4),rgba(15,23,42,0.85))] border border-cyan-300/25 flex items-center justify-center text-cyan-300 font-black text-[10px] xs:text-xs tracking-wider">
+              GA
+            </div>
           </div>
           <div className="min-w-0">
             <div className="text-sm xs:text-base md:text-lg font-bold tracking-tight text-white group-hover:text-cyan-300 transition-colors truncate leading-tight whitespace-nowrap">
               Goutham Acharya
             </div>
             <div className="text-slate-400 text-[8px] xs:text-[9px] md:text-[10px] tracking-[0.3em] uppercase mt-0.5 truncate">
-              AI & ML ENGINEER
+              AI · ML
             </div>
           </div>
         </a>
 
         {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center gap-4 xl:gap-6">
+        <div className="hidden lg:flex items-center gap-4 xl:gap-8">
           <nav className="flex items-center gap-4 xl:gap-6 text-slate-300 text-sm font-medium" role="navigation" aria-label="Main navigation">
             {navigation.map((item) => {
               const id = item.href.replace("#", "");
@@ -191,8 +160,9 @@ export default function Navbar() {
                   key={item.href}
                   href={item.href}
                   onClick={(e) => handleNavClick(e, item.href)}
-                  className={`relative py-1 whitespace-nowrap transition-all duration-300 hover:text-white hover:translate-y-[-1px] ${isActive ? "text-cyan-300 font-semibold" : "text-slate-300"
-                    }`}
+                  className={`relative py-1 whitespace-nowrap transition-all duration-300 hover:text-white hover:translate-y-[-1px] ${
+                    isActive ? "text-cyan-300 font-semibold" : "text-slate-300"
+                  }`}
                 >
                   {item.label}
                   {isActive && (
@@ -209,7 +179,7 @@ export default function Navbar() {
           <a
             href="#contact"
             onClick={(e) => handleNavClick(e, "#contact")}
-            className="inline-flex h-10 items-center justify-center rounded-xl bg-cyan-400 px-5 text-sm font-bold text-slate-950 shadow-[0_0_20px_rgba(34,211,238,0.25)] transition-all duration-300 hover:bg-cyan-300 hover:shadow-[0_0_25px_rgba(34,211,238,0.4)] active:scale-[0.98] shrink-0"
+            className="h-10 px-5 flex items-center justify-center rounded-xl bg-cyan-400 text-slate-950 text-sm font-bold shadow-[0_0_25px_rgba(34,211,238,0.25)] transition-all duration-300 hover:bg-cyan-300 hover:shadow-[0_0_35px_rgba(34,211,238,0.45)] active:scale-[0.98]"
           >
             Hire Me
           </a>
@@ -221,22 +191,29 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* ── Mobile Navigation Drawer ── */}
+      {/* ── Mobile Drawer with Backdrop ── */}
       <AnimatePresence>
         {open && (
           <>
             {/* Backdrop */}
             <motion.div
+              key="drawer-backdrop"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={closeDrawer}
+              transition={{ duration: 0.25 }}
               className="drawer-backdrop lg:hidden"
+              onClick={closeDrawer}
               aria-hidden="true"
             />
 
-            {/* Drawer */}
+            {/* Slide-in Drawer */}
             <motion.div
+              key="mobile-drawer"
+              id="mobile-drawer"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Navigation menu"
               ref={drawerRef}
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
@@ -257,17 +234,15 @@ export default function Navbar() {
                     <p className="text-[9px] text-slate-500 uppercase tracking-[0.25em]">AI · ML Portfolio</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
                 <button
                   onClick={closeDrawer}
                   className="h-9 w-9 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:border-white/20 transition-colors"
                   aria-label="Close navigation menu"
                 >
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <path d="M3 3L13 13M13 3L3 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M3 3L13 13M13 3L3 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                   </svg>
                 </button>
-              </div>
               </div>
 
               {/* Navigation Links */}
@@ -283,18 +258,19 @@ export default function Navbar() {
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.05 + index * 0.05, duration: 0.25 }}
-                      className={`relative flex items-center gap-3.5 rounded-xl px-4 py-3.5 text-[15px] font-medium transition-all duration-200 min-h-[52px] ${isActive
-                        ? "bg-cyan-500/10 border border-cyan-500/20 text-cyan-300"
-                        : "border border-transparent text-slate-300 hover:bg-white/5 hover:text-white hover:border-white/8"
-                        }`}
+                      className={`relative flex items-center gap-3.5 rounded-xl px-4 py-3.5 text-[15px] font-medium transition-all duration-200 min-h-[52px] ${
+                        isActive
+                          ? "bg-cyan-500/10 border border-cyan-400/20 text-cyan-300"
+                          : "border border-transparent text-slate-300 hover:bg-white/5 hover:text-white hover:border-white/8"
+                      }`}
                     >
                       {isActive && (
-                        <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shrink-0 shadow-[0_0_10px_rgba(34,211,238,0.4)]" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shrink-0 shadow-[0_0_6px_rgba(34,211,238,0.8)]" />
                       )}
                       {!isActive && <span className="h-1.5 w-1.5 rounded-full bg-transparent shrink-0" />}
                       {item.label}
                       {isActive && (
-                        <span className="ml-auto text-[10px] font-semibold uppercase tracking-widest text-cyan-400 opacity-70">
+                        <span className="ml-auto text-[10px] font-semibold uppercase tracking-widest text-cyan-400/60">
                           Current
                         </span>
                       )}
@@ -314,7 +290,7 @@ export default function Navbar() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.35, duration: 0.25 }}
-                  className="flex items-center justify-center w-full min-h-[54px] rounded-xl bg-cyan-400 text-slate-950 text-base font-bold shadow-[0_0_20px_rgba(34,211,238,0.35)] hover:bg-cyan-300 transition-all duration-200 active:scale-[0.98]"
+                  className="flex items-center justify-center w-full min-h-[54px] rounded-xl bg-cyan-400 text-slate-950 text-base font-bold shadow-[0_0_30px_rgba(34,211,238,0.3)] hover:bg-cyan-300 transition-all duration-200 active:scale-[0.98]"
                 >
                   Hire Me
                 </motion.a>

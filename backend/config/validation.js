@@ -29,16 +29,8 @@ export const chatSchema = z.object({
     .string({ required_error: "Message is required." })
     .trim()
     .min(1,   { message: "Message cannot be empty." })
-    .max(2000, { message: "Message exceeds maximum length of 2000 characters." }),
-  history: z
-    .array(
-      z.object({
-        role: z.string().max(50),
-        content: z.string().max(2000),
-      })
-    )
-    .optional()
-    .default([]),
+    .max(5000, { message: "Message must not exceed 5000 characters." })
+    .refine((v) => v.length > 0, { message: "Message cannot be blank." }),
 });
 
 export function escapeHtml(value) {
@@ -51,17 +43,13 @@ export function escapeHtml(value) {
 }
 
 export function sanitizeChatMessage(message) {
-  if (typeof message !== "string") return "";
   return message
-    .replace(/ignore\s+(all\s+)?(previous|above|prior|system)\s+instructions?/gi, "[filtered]")
-    .replace(/you\s+are\s+now\s+(?:a|an)\s+/gi,                           "[filtered]")
-    .replace(/pretend\s+(?:you\s+are|to\s+be)\s+/gi,                      "[filtered]")
-    .replace(/act\s+as\s+(?:a|an)\s+/gi,                                   "[filtered]")
-    .replace(/system\s*:\s*/gi,                                            "[filtered]")
-    .replace(/developer\s+mode/gi,                                         "[filtered]")
-    .replace(/\bDAN\b/g,                                                   "[filtered]")
-    .replace(/\[\s*system\s*prompt\s*\]/gi,                                "[filtered]")
-    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi,                       "[filtered]")
+    .replace(/ignore\s+(all\s+)?(previous|above|prior)\s+instructions?/gi, "[removed]")
+    .replace(/you\s+are\s+now\s+(?:a|an)\s+/gi,                           "[removed]")
+    .replace(/pretend\s+(?:you\s+are|to\s+be)\s+/gi,                      "[removed]")
+    .replace(/act\s+as\s+(?:a|an)\s+/gi,                                   "[removed]")
+    .replace(/system\s*:\s*/gi,                                            "[removed]")
+    .replace(/\bDAN\b/g,                                                   "[removed]")
     .trim();
 }
 

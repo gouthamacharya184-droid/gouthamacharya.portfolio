@@ -1,19 +1,17 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Bot, Sparkles, Plus, Trash2, Download, Sliders, Minimize2, X, Menu, RefreshCw
+  Bot, Sparkles, Plus, Trash2, Download, Sliders, Minimize2, X, Menu
 } from 'lucide-react';
-import { useChatContext } from '../../hooks/useChat';
 
 function StatusDot({ status }) {
   const colors = {
-    online: 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]',
-    warming: 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)] animate-pulse',
-    offline: 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]',
+    online: 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]',
+    offline: 'bg-red-400',
     checking: 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]',
   };
   return (
-    <span className={`inline-block rounded-full h-2 w-2 ${colors[status] ?? colors.checking}`} />
+    <span className={`inline-block rounded-full h-2 w-2 ${colors[status] ?? colors.checking} ${status !== 'offline' ? 'animate-pulse' : ''}`} />
   );
 }
 
@@ -35,17 +33,9 @@ function VoiceWaveform() {
 
 export default function ChatHeader({
   sidebarOpen, setSidebarOpen,
-  aiStatus: propAiStatus, speakingMsgId, onNewChat, onClear, onExport,
+  aiStatus, speakingMsgId, onNewChat, onClear, onExport,
   onMinimize, onClose, onSettings
 }) {
-  let chatCtx = null;
-  try {
-    chatCtx = useChatContext();
-  } catch {
-    // Graceful fallback if rendered outside ChatProvider
-  }
-  const aiStatus = propAiStatus ?? chatCtx?.aiStatus ?? 'checking';
-  const recheckStatus = chatCtx?.recheckStatus;
 
   return (
     <div className="flex items-center justify-between px-5 py-3.5 flex-shrink-0 border-b border-white/[0.05] bg-[#03050a]/80 backdrop-blur-xl relative z-40">
@@ -74,22 +64,13 @@ export default function ChatHeader({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 pl-2 border-l border-white/5">
+          <div className="flex items-center gap-1.5 pl-2 border-l border-white/5">
             <StatusDot status={aiStatus} />
             <span className={`text-[10px] uppercase tracking-wider font-bold ${
-              aiStatus === 'online' ? 'text-emerald-400' : aiStatus === 'offline' ? 'text-rose-400' : 'text-amber-400 animate-pulse'
+              aiStatus === 'online' ? 'text-emerald-400 animate-pulse' : aiStatus === 'offline' ? 'text-red-400' : 'text-amber-400'
             }`}>
-              {aiStatus === 'online' ? 'Online' : aiStatus === 'warming' ? 'Waking Up…' : aiStatus === 'offline' ? 'Offline' : 'Connecting…'}
+              {aiStatus === 'online' ? 'Online' : aiStatus === 'offline' ? 'Offline' : 'Connecting…'}
             </span>
-            {recheckStatus && (
-              <button
-                onClick={recheckStatus}
-                className="p-1 text-slate-500 hover:text-cyan-400 transition-colors rounded-lg cursor-pointer"
-                title="Recheck connection status"
-              >
-                <RefreshCw size={11} className={aiStatus === 'checking' ? 'animate-spin' : ''} />
-              </button>
-            )}
           </div>
         </div>
 

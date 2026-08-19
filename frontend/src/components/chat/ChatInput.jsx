@@ -4,7 +4,7 @@ import { ArrowUp, Zap } from 'lucide-react';
 
 const MAX_MESSAGE_LENGTH = 5000;
 
-export default function ChatInput({ onSend, isTyping, fullscreen = false, disabled = false, placeholder = 'Message Portfolio AI…' }) {
+export default function ChatInput({ onSend, isTyping, fullscreen = false, placeholder = 'Message Portfolio AI…' }) {
   const [text, setText] = useState('');
   const [isFocused, setIsFocused] = useState(true);
   const ref = useRef(null);
@@ -29,7 +29,7 @@ export default function ChatInput({ onSend, isTyping, fullscreen = false, disabl
 
   const submit = () => {
     const t = text.trim();
-    if (!t || isTyping || disabled) return;
+    if (!t || isTyping) return;
     onSend(t);
     setText('');
     if (ref.current) {
@@ -45,7 +45,7 @@ export default function ChatInput({ onSend, isTyping, fullscreen = false, disabl
     }
   };
 
-  const canSend = text.trim().length > 0 && !isTyping && !disabled;
+  const canSend = text.trim().length > 0 && !isTyping;
 
   return (
     <div className={`w-full ${fullscreen ? 'max-w-3xl mx-auto' : ''}`}>
@@ -70,13 +70,12 @@ export default function ChatInput({ onSend, isTyping, fullscreen = false, disabl
             onKeyDown={onKey}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
-            placeholder={disabled ? 'Chatbot is currently offline…' : placeholder}
+            placeholder={placeholder}
             aria-label="Chat message input"
             autoComplete="off"
             spellCheck="true"
             className="flex-1 bg-transparent text-[14px] text-white placeholder:text-slate-500 resize-none outline-none border-none focus:ring-0 focus:outline-none leading-relaxed py-1.5"
             style={{ minHeight: 24, maxHeight: 140, overflowY: 'auto' }}
-            disabled={disabled}
           />
 
           <div className="flex items-center gap-2 mb-1">
