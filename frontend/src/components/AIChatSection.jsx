@@ -7,7 +7,7 @@ import {
 import Section from './Section';
 import { fadeUp, stagger } from '../utils/motion';
 import MarkdownRenderer from './markdown/MarkdownRenderer';
-import { checkChatStatus } from '../utils/chatApi';
+import { checkChatStatus, checkBackendHealth } from '../utils/chatApi';
 import MessageBubble from './chat/MessageBubble';
 import { useChatContext } from '../hooks/useChat';
 import { formatTime } from '../utils/utils';
@@ -90,20 +90,39 @@ export default function AIChatSection({ apiBaseUrl }) {
     }
   }, [messages, isTyping]);
 
-  // ── Status check — runs on mount and polls every 60s ─────────────────────────
+  // ── Status check — 2-phase: /health (90s cold-start) then /chat/status ──────
   useEffect(() => {
     let cancelled = false;
+
     const check = async () => {
       const status = await checkChatStatus(baseUrl);
       if (!cancelled) {
         setAiStatus(status);
-        addLog('status', `Groq LLM endpoint checked. Status: ${status.toUpperCase()}`);
+        const label = status === 'online' ? 'ONLINE' : status === 'waking' ? 'WAKING' : status === 'degraded' ? 'DEGRADED' : 'OFFLINE';
+        addLog('status', `Backend status: ${label}`);
       }
     };
+
+    // Initial check
     check();
+
+    // Poll every 60s
     const interval = setInterval(check, 60_000);
-    return () => { cancelled = true; clearInterval(interval); };
+
+    // ── Keep-alive ping every 14 min to prevent Render free-tier cold-start ────
+    // Render sleeps after 15 min of inactivity. Ping /api/health silently every
+    // 14 min so the server stays warm and users never see the "waking" state.
+    const keepAlive = setInterval(async () => {
+      if (!cancelled) await checkBackendHealth(baseUrl);
+    }, 14 * 60 * 1000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      clearInterval(keepAlive);
+    };
   }, [baseUrl, addLog]);
+
 
   // ── TTS Text-to-Speech ───────────────────────────────────────────────────────
   const handleToggleSpeech = (msgId, text) => {
@@ -141,10 +160,12 @@ export default function AIChatSection({ apiBaseUrl }) {
     addLog('system', 'Chat history exported successfully.');
   };
 
-  // canSend: only when text present, not typing, AND AI is online
-  const canSend = inputText.trim().length > 0 && !isTyping && aiStatus === 'online';
+  // canSend: allow when online OR degraded (backend alive, attempt anyway)
+  const canSend = inputText.trim().length > 0 && !isTyping && (aiStatus === 'online' || aiStatus === 'degraded');
 
-  if (aiStatus !== 'online') return null;
+  // Hide section only when truly offline (server not reachable at all)
+  // Show it in all other states including waking/degraded
+  if (aiStatus === 'offline') return null;
 
   return (
     <Section
@@ -317,11 +338,19 @@ export default function AIChatSection({ apiBaseUrl }) {
                   <Sparkles size={12} className="text-cyan-400 animate-pulse" />
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className={`inline-block h-2 w-2 rounded-full ${
-                    aiStatus === 'online' ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)] animate-pulse' : aiStatus === 'offline' ? 'bg-rose-500' : 'bg-amber-400'
+                  <span className={`inline-block h-2 w-2 rounded-full transition-all duration-500 ${
+                    aiStatus === 'online'   ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)] animate-pulse' :
+                    aiStatus === 'waking'   ? 'bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.6)] animate-pulse' :
+                    aiStatus === 'degraded' ? 'bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.6)] animate-pulse' :
+                    aiStatus === 'checking' ? 'bg-slate-400 animate-pulse' :
+                    'bg-rose-500'
                   }`} />
                   <span className="text-[9px] uppercase tracking-wider font-bold text-slate-500">
-                    {aiStatus === 'online' ? 'Connected' : aiStatus === 'offline' ? 'Offline' : 'Connecting'}
+                    {aiStatus === 'online'   ? 'Connected' :
+                     aiStatus === 'waking'   ? 'Waking Up…' :
+                     aiStatus === 'degraded' ? 'AI Degraded' :
+                     aiStatus === 'checking' ? 'Checking…' :
+                     'Offline'}
                   </span>
                 </div>
               </div>
@@ -370,12 +399,20 @@ export default function AIChatSection({ apiBaseUrl }) {
           </div>
 
 
-          {/* Offline Warning Banner */}
-          {aiStatus === 'offline' && (
-            <div className="flex items-center gap-2 px-5 py-2.5 bg-rose-500/10 border-b border-rose-500/20 flex-shrink-0">
-              <WifiOff size={13} className="text-rose-400 shrink-0" />
-              <span className="text-rose-400 text-[11px] font-medium">
-                AI assistant is currently offline. Please try again later.
+          {/* Status Banners */}
+          {aiStatus === 'waking' && (
+            <div className="flex items-center gap-2 px-5 py-2.5 bg-amber-500/10 border-b border-amber-500/20 flex-shrink-0">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
+              <span className="text-amber-400 text-[11px] font-medium">
+                Waking up the backend server — this takes ~30s on first load (Render free tier).
+              </span>
+            </div>
+          )}
+          {aiStatus === 'degraded' && (
+            <div className="flex items-center gap-2 px-5 py-2.5 bg-orange-500/10 border-b border-orange-500/20 flex-shrink-0">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-orange-400 animate-pulse shrink-0" />
+              <span className="text-orange-400 text-[11px] font-medium">
+                Backend is running. AI service is degraded — GROQ_API_KEY may need updating on Render.
               </span>
             </div>
           )}

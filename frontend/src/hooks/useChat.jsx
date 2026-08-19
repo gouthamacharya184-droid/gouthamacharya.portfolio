@@ -27,7 +27,11 @@ function deriveSessionTitle(messages) {
 const INITIAL_SESSION = makeSession('New Chat');
 
 export function ChatProvider({ children, apiBaseUrl }) {
-  const baseUrl = (apiBaseUrl || '').replace(/\/$/, '') || window.location.origin;
+  // Use VITE_API_BASE_URL in production (Vercel → Render).
+  // If not set, fall back to the known Render backend URL so the chatbot
+  // still works even if the env var was forgotten in Vercel dashboard.
+  const RENDER_BACKEND = 'https://goutham-portfolio-backend.onrender.com';
+  const baseUrl = (apiBaseUrl || '').replace(/\/$/, '') || RENDER_BACKEND;
 
   const [sessions, setSessions] = useState([INITIAL_SESSION]);
   const [activeSessionId, setActiveSessionId] = useState(INITIAL_SESSION.id);
