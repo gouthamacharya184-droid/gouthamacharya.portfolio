@@ -1,6 +1,12 @@
+import fs from "fs";
+import path from "path";
 import crypto from "crypto";
+import { fileURLToPath } from "url";
 import { portfolioData } from "../config/portfolio.js";
 import { config } from "../config/config.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const portfolioETag = `"${crypto
   .createHash("sha256")
@@ -37,3 +43,29 @@ export const getPortfolioConfig = (req, res) => {
     },
   });
 };
+
+export const downloadResume = (req, res) => {
+  const possiblePaths = [
+    path.join(__dirname, "../uploads/projects/Goutham_Acharya_Resume.pdf"),
+    path.join(__dirname, "../uploads/Goutham_Acharya_Resume.pdf"),
+    path.join(__dirname, "../uploads/resume.pdf"),
+  ];
+
+  let resumePath = null;
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p)) {
+      resumePath = p;
+      break;
+    }
+  }
+
+  if (!resumePath) {
+    return res.status(404).json({ ok: false, message: "Resume file not found." });
+  }
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", 'inline; filename="Goutham_Acharya_Resume.pdf"');
+  res.setHeader("Cache-Control", "public, max-age=3600");
+  return res.sendFile(resumePath);
+};
+

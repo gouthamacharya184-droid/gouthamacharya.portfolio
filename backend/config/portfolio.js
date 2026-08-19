@@ -10,20 +10,23 @@ export const portfolioData = {
 
   profile: {
     name:      "Goutham Acharya",
-    title:     "AI Engineering & Automation Specialist | Python, LLMs, RAG & NLP",
+    title:     "AIML Student & Automation Developer | Python, LLMs, RAG, AI Agents & Automation",
     location:  "Udupi, Karnataka, India",
-    summary:
-      "Passionate AI Engineer specializing in designing and optimizing LLM workflows, context-aware RAG pipelines, and automated NLP systems. Proficient in Python, dataset preprocessing, and deploying intelligent models into web architectures.",
-    objective:
-      "Seeking an AI Engineering or Python Developer internship to deploy robust LLM solutions, optimize vector-based retrieval accuracy, and build production-grade intelligent features.",
-    github:    "https://github.com/gouthamacharya184-droid",
+    phone:     "7619573468",
     displayEmail: "gouthamacharya184@gmail.com",
+    summary:
+      "Motivated Artificial Intelligence and Machine Learning (AIML) student with strong foundations in Python, APIs, Generative AI, and workflow automation. Passionate about building AI-powered applications, AI agents, and intelligent automation solutions using Large Language Models (LLMs). Experienced in developing real-world AI projects and integrating modern technologies to solve business problems.",
+    objective:
+      "Seeking an Automation Developer Intern role to contribute technical skills, learn enterprise automation practices, and deliver impactful AI-driven solutions.",
+    github:       "https://github.com/gouthamacharya184-droid",
+    portfolioUrl: "https://gouthamacharya.vercel.app/",
+    resumeUrl:    "/api/portfolio/resume",
   },
 
   highlights: [
-    { icon: "GraduationCap", label: "3rd Year B.E.", sub: "AI & ML Engineering" },
+    { icon: "GraduationCap", label: "3rd Year B.E. (AIML)", sub: "Expected 2027 • SGPA 7.86" },
     { icon: "MapPin",        label: "Udupi, Karnataka", sub: "India" },
-    { icon: "Briefcase",     label: "Open to Internships", sub: "AI / ML / NLP roles" },
+    { icon: "Briefcase",     label: "Open to Internships", sub: "Automation & AI Developer" },
   ],
 
   stats: [
@@ -72,70 +75,83 @@ export const portfolioData = {
   experience: [
     {
       period:      "Present",
-      role:        "AIML Student & Builder",
-      company:     "Self-Driven Learning Track",
+      role:        "AIML Student & Automation Developer",
+      company:     "Self-Driven Learning Track & AI Projects",
       description:
-        "Building AI-first portfolio projects around hallucination detection, legal chatbots, data analysis, and workflow automation while strengthening production-oriented thinking.",
+        "Building AI-first software applications, intelligent chatbots, automated NLP systems, and hallucination detection workflows while strengthening production-oriented engineering.",
       points: [
-        "Working with machine learning fundamentals, preprocessing, and evaluation",
-        "Exploring LLM behavior across prompts, data pipelines, and response validation",
-        "Expanding into FastAPI and AI workflow automation for deployable products",
+        "Developing real-world AI applications using LangChain, Streamlit, and FastAPI",
+        "Integrating LLM APIs with RAG and Brave Search for factual verification and output accuracy",
+        "Engineering conversational AI interfaces and structured automation pipelines",
       ],
     },
   ],
 
   education: [
     {
-      period:      "Current",
-      title:       "Bachelor of Engineering in Artificial Intelligence & Machine Learning",
-      institution: "Pursuing • 3rd Year",
+      period:      "2023 - 2027 (Expected)",
+      title:       "B.E. in Artificial Intelligence & Machine Learning",
+      institution: "Moodlakatte Institute of Technology • SGPA: 7.86",
       icon:        "GraduationCap",
     },
     {
-      period:      "Completed",
+      period:      "2021 - 2024 (Completed)",
       title:       "Diploma in Mechanical Engineering",
-      institution: "Completed",
+      institution: "Government Polytechnic Udupi • CGPA: 7.26",
       icon:        "NotebookPen",
     },
   ],
 
   projects: [
     {
+      title:       "Personal Portfolio Website",
+      image:       "/api/uploads/projects/hallucination.webp",
+      stack:       ["React", "Tailwind CSS", "Vite", "Node.js", "Express"],
+      description:
+        "Developed a responsive personal portfolio website using React and Tailwind CSS to showcase projects, technical skills, certifications, and contact information, with a modern, mobile-friendly UI focused on usability, responsive design, and clean visual presentation across all devices.",
+      bullets: [
+        "Built responsive, mobile-friendly user interface with modern glassmorphic styling",
+        "Structured modular Node.js/Express REST backend for dynamic portfolio API data",
+        "Optimized asset loading, smooth animations, and secure production deployment",
+      ],
+      links: { github: "https://github.com/gouthamacharya184-droid", demo: "https://gouthamacharya.vercel.app/" },
+    },
+    {
       title:       "LLM Hallucination Detection",
       image:       "/api/uploads/projects/hallucination.webp",
-      stack:       ["Python", "Excel", "LLM Evaluation", "Prompt Analysis"],
+      stack:       ["Python", "RAG", "Brave Search", "LangChain", "LLM APIs"],
       description:
-        "Compared outputs from multiple LLMs using identical queries, organized response data, and created a simple scoring system to identify inconsistencies and hallucinated answers.",
+        "Large Language Models (LLMs) can generate confident but factually incorrect responses (hallucinations). This project integrates multiple LLM APIs and uses RAG with Brave Search to verify responses against trusted sources, measure factual accuracy, and compare hallucination rates across different models.",
       bullets: [
-        "Collected comparable responses from multiple models",
-        "Structured outputs into reusable Excel datasets",
-        "Designed a lightweight response accuracy scoring approach",
+        "Integrated multiple LLM APIs for automated output comparison",
+        "Implemented RAG with Brave Search live web retrieval for factual verification",
+        "Measured hallucination rates and accuracy scoring metrics across models",
+      ],
+      links: { github: "https://github.com/gouthamacharya184-droid" },
+    },
+    {
+      title:       "Legal AI Assistant (Chatbot)",
+      image:       "/api/uploads/projects/legal-ai.webp",
+      stack:       ["Gemini API", "Python", "RAG", "Prompt Engineering", "NLP"],
+      description:
+        "Accessing legal information can be complex and time-consuming for individuals without legal expertise. This project uses the Gemini API to provide an AI-powered legal assistant that answers legal queries, explains legal concepts in simple language, and assists users in understanding legal documents and procedures through a conversational interface.",
+      bullets: [
+        "Leveraged Gemini API for context-aware conversational AI assistance",
+        "Engineered legal-domain prompts for simple, accessible explanations",
+        "Assisted users in navigating legal documents, terms, and procedures",
       ],
       links: { github: "https://github.com/gouthamacharya184-droid" },
     },
     {
       title:       "Data Analysis using Python",
       image:       "/api/uploads/projects/data-analysis.webp",
-      stack:       ["Python", "Pandas", "Matplotlib", "EDA"],
+      stack:       ["Python", "Pandas", "NumPy", "Matplotlib", "EDA"],
       description:
-        "Cleaned and analyzed structured datasets, surfaced patterns through exploratory analysis, and visualized trends for clearer decision-making.",
+        "Cleaned and analyzed structured datasets, surfaced patterns through exploratory data analysis (EDA), and visualized key trends for actionable insights.",
       bullets: [
-        "Preprocessed CSV and Excel datasets with Pandas",
-        "Performed exploratory data analysis to find trends",
-        "Created visual summaries and insight-driven charts",
-      ],
-      links: { github: "https://github.com/gouthamacharya184-droid" },
-    },
-    {
-      title:       "Legal AI Assistant",
-      image:       "/api/uploads/projects/legal-ai.webp",
-      stack:       ["Gemini", "JSON", "Prompt Engineering", "RAG"],
-      description:
-        "Built a legal-information chatbot workflow, analyzed model responses for quality issues, and improved accuracy with prompt iteration and context-aware retrieval.",
-      bullets: [
-        "Collected legal-domain responses with varied queries",
-        "Stored and organized outputs in JSON format",
-        "Applied prompt techniques and RAG-style thinking for better responses",
+        "Preprocessed and cleaned raw tabular datasets using Pandas & NumPy",
+        "Performed exploratory data analysis to extract hidden patterns",
+        "Designed clear visual summaries and insight-driven charts with Matplotlib",
       ],
       links: { github: "https://github.com/gouthamacharya184-droid" },
     },
@@ -146,63 +162,69 @@ export const portfolioData = {
       title: "Programming",
       icon:  "FileCode2",
       skills: [
-        { name: "Python",       level: 90 },
-        { name: "RESTful APIs", level: 68 },
+        { name: "Python",          level: 92 },
+        { name: "RESTful APIs",    level: 80 },
+        { name: "API Integration", level: 82 },
       ],
     },
     {
-      title: "Libraries & Data",
+      title: "Libraries & Frameworks",
       icon:  "Database",
       skills: [
         { name: "Pandas",       level: 86 },
-        { name: "NumPy",        level: 78 },
+        { name: "NumPy",        level: 80 },
         { name: "Matplotlib",   level: 82 },
         { name: "Scikit-Learn", level: 76 },
+        { name: "FastAPI",      level: 75 },
+        { name: "Streamlit",    level: 78 },
+        { name: "LangChain",    level: 75 },
       ],
     },
     {
-      title: "AI / ML / NLP",
+      title: "AI / ML & NLP",
       icon:  "BrainCircuit",
       skills: [
-        { name: "Machine Learning",                    level: 82 },
-        { name: "Data Preprocessing",                  level: 84 },
-        { name: "Natural Language Processing (NLP)",   level: 77 },
-        { name: "Prompt Engineering",                  level: 80 },
-        { name: "Large Language Models (LLMs)",        level: 79 },
-        { name: "Retrieval-Augmented Generation (RAG)", level: 72 },
+        { name: "Machine Learning",                     level: 82 },
+        { name: "Data Preprocessing",                   level: 85 },
+        { name: "Model Training",                       level: 80 },
+        { name: "NLP & Text Processing",                level: 78 },
+        { name: "Retrieval-Augmented Generation (RAG)",  level: 80 },
+        { name: "Large Language Models (LLMs)",         level: 82 },
+        { name: "Prompt Engineering",                   level: 84 },
+        { name: "Vector Databases",                     level: 75 },
       ],
     },
     {
-      title: "Tools",
+      title: "Tools & Workflows",
       icon:  "Wrench",
       skills: [
+        { name: "Antigravity",         level: 85 },
+        { name: "Google Colab",        level: 88 },
         { name: "Jupyter",             level: 88 },
-        { name: "Google Colab",        level: 85 },
-        { name: "FastAPI",             level: 62 },
-        { name: "Workflow Automation", level: 64 },
+        { name: "Workflow Automation", level: 80 },
       ],
     },
   ],
 
   strengthCards: [
     {
-      title: "AI Mindset",
-      text:  "Strong interest in AI, emerging tools, and practical real-world applications.",
+      title: "AI & Automation Mindset",
+      text:  "Passionate about building AI-powered applications, AI agents, and intelligent workflow automation.",
       icon:  "Sparkles",
     },
     {
       title: "Problem Solver",
-      text:  "Comfortable breaking down unclear problems into smaller, testable steps.",
+      text:  "Experienced in breaking down real-world business problems into modular, testable AI solutions.",
       icon:  "LineChart",
     },
     {
-      title: "Communication",
-      text:  "Able to work independently and contribute within team environments.",
+      title: "Communication & Teamwork",
+      text:  "Able to work independently and contribute effectively in collaborative software teams.",
       icon:  "MessageSquareText",
     },
     {
-      title: "Build Focus",
-      text:  "Interested in moving from experiments to product-shaped AI workflows.",
+      title: "Production Focus",
+      text:  "Dedicated to building enterprise-grade automation practices and deployable AI features.",
       icon:  "ServerCog",
     },
   ],
@@ -239,16 +261,16 @@ export const portfolioData = {
 
   achievements: [
     {
-      title:       "3rd Year B.E. in AI & ML",
-      description: "Pursuing a specialised engineering degree focused on practical AI systems, machine learning pipelines, and real-world NLP workflows.",
+      title:       "3rd Year B.E. in AIML (SGPA: 7.86)",
+      description: "Pursuing specialized degree in Artificial Intelligence & Machine Learning at Moodlakatte Institute of Technology.",
       icon:        "Trophy",
       color:       "text-amber-400",
       bg:          "bg-amber-500/10",
       border:      "border-amber-400/20",
     },
     {
-      title:       "Self-Driven AI Builder",
-      description: "Built 3+ end-to-end projects across hallucination detection, legal AI chatbots, and exploratory data analysis — without a formal internship.",
+      title:       "Diploma in Mechanical Engineering (CGPA: 7.26)",
+      description: "Successfully completed diploma foundation at Government Polytechnic Udupi (2021-2024).",
       icon:        "Award",
       color:       "text-emerald-400",
       bg:          "bg-emerald-500/10",
@@ -258,17 +280,17 @@ export const portfolioData = {
 
   blogTopics: [
     {
-      title:       "Optimizing RAG Pipelines for Better Retrieval",
-      excerpt:     "Exploring chunking strategies, embedding models, and vector database choices for building reliable retrieval-augmented generation workflows.",
+      title:       "Optimizing RAG Pipelines with Brave Search and Vector DBs",
+      excerpt:     "Exploring chunking strategies, embedding models, and web search integration for reliable retrieval-augmented generation.",
       status:      "Researching",
       statusColor: "text-amber-400",
       statusBg:    "bg-amber-500/10",
       statusBorder:"border-amber-400/20",
-      tags:        ["LLM", "RAG", "Vector DB"],
+      tags:        ["LLM", "RAG", "Vector DB", "Brave Search"],
     },
     {
-      title:       "LLM Hallucination: Causes and Detection Methods",
-      excerpt:     "A deep dive into why large language models confidently produce wrong answers, and practical evaluation approaches to catch inconsistencies.",
+      title:       "Detecting LLM Hallucinations in Production",
+      excerpt:     "A deep dive into measuring factual accuracy across model outputs and building automated verification pipelines.",
       status:      "Drafting",
       statusColor: "text-cyan-400",
       statusBg:    "bg-cyan-500/10",
@@ -276,13 +298,13 @@ export const portfolioData = {
       tags:        ["LLM Evaluation", "Hallucination", "Python"],
     },
     {
-      title:       "Prompt Engineering Patterns That Actually Work",
-      excerpt:     "Moving beyond basic prompts — structured techniques like chain-of-thought, few-shot, and role prompting for reliable AI outputs.",
+      title:       "Building AI Agents and Workflow Automations with LangChain",
+      excerpt:     "Moving beyond basic prompts — structured workflows, tool integration, and agentic patterns for enterprise automation.",
       status:      "Researching",
       statusColor: "text-amber-400",
       statusBg:    "bg-amber-500/10",
       statusBorder:"border-amber-400/20",
-      tags:        ["Prompt Engineering", "NLP"],
+      tags:        ["LangChain", "AI Agents", "Automation"],
     },
   ],
 
@@ -304,3 +326,4 @@ export const portfolioData = {
     },
   ],
 };
+
