@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: goutham-portfolio-backend
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: npm --prefix backend install
+    startCommand: node backend/api/server.js
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        value: https://gouthamacharya.vercel.app
+      - key: GROQ_API_KEY
+        sync: false
+      - key: WHATSAPP_NUMBER
+        value: "7619573468"
+      - key: GITHUB_URL
+        value: https://github.com/gouthamacharya184-droid

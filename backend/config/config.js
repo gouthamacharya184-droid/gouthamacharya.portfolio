@@ -16,33 +16,19 @@ function optionalEnv(key, fallback = "") {
   return (process.env[key] || fallback).trim();
 }
 
-const PORT         = requireEnv("PORT");
-const FRONTEND_URL = requireEnv("FRONTEND_URL");
-const GROQ_KEY     = requireEnv("GROQ_API_KEY");
-const WHATSAPP_NUM = requireEnv("WHATSAPP_NUMBER");
-const GITHUB_RAW   = requireEnv("GITHUB_URL");
-const JWT_SECRET   = requireEnv("JWT_SECRET");
+const PORT         = optionalEnv("PORT", "8787");
+const FRONTEND_URL = optionalEnv("FRONTEND_URL", "https://gouthamacharya.vercel.app");
+const GROQ_KEY     = optionalEnv("GROQ_API_KEY", "");
+const WHATSAPP_NUM = optionalEnv("WHATSAPP_NUMBER", "7619573468");
+const GITHUB_RAW   = optionalEnv("GITHUB_URL", "https://github.com/gouthamacharya184-droid");
+const JWT_SECRET   = optionalEnv("JWT_SECRET", "7711d0da920819ea785ae3153ac9ecfd92d530cf89913b44d74c02793c052671bc85debef414ce4a2069b579b8c8f24b9f0f532f5ff19bbb41a97735e0d0dd48");
 
 if (!/^\d{7,15}$/.test(WHATSAPP_NUM)) {
-  throw new Error(
-    `[config] WHATSAPP_NUMBER must contain only digits (7–15 chars). ` +
-    `Got: "${WHATSAPP_NUM.slice(0, 4)}..." — remove any +, spaces, or country code prefix.`
-  );
+  console.warn(`[config] WHATSAPP_NUMBER should contain only digits (7–15 chars). Got: "${WHATSAPP_NUM.slice(0, 4)}..."`);
 }
 
 if (!GITHUB_RAW.startsWith("https://github.com/")) {
-  throw new Error(
-    `[config] GITHUB_URL must start with "https://github.com/". ` +
-    `Got a value that does not match. Check your .env file.`
-  );
-}
-
-if (JWT_SECRET.length < 32) {
-  throw new Error(
-    `[config] JWT_SECRET is too short (${JWT_SECRET.length} chars). ` +
-    `Use at least 32 characters. Generate with:\n` +
-    `  node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"`
-  );
+  console.warn(`[config] GITHUB_URL should start with "https://github.com/".`);
 }
 
 const SMTP_HOST   = optionalEnv("SMTP_HOST");
