@@ -68,20 +68,37 @@ const GROQ_MODELS = [
 ];
 
 let lastWorkingModelIndex = 0;
-let cachedStatus     = null;
-let lastStatusCheckMs = 0;
-const STATUS_TTL_MS   = 60_000;
+
+function generatePortfolioFallbackResponse(query) {
+  const q = query.toLowerCase();
+
+  if (q.includes("resume") || q.includes("cv") || q.includes("download") || q.includes("pdf")) {
+    return `You can view and download Goutham Acharya's updated resume directly using the link below:\n\n📄 **[Download Goutham Acharya's Resume (PDF)](${portfolioData.profile.resumeUrl})**\n\n**Quick Summary:**\n- **Target Role:** Automation Developer Intern / AIML Engineer\n- **Education:** 3rd Year B.E. in AIML at Moodlakatte Institute of Technology (SGPA: 7.86)\n- **Key Skills:** Python, LangChain, RAG, LLMs, Streamlit, FastAPI, Data Preprocessing, Vector DBs`;
+  }
+
+  if (q.includes("education") || q.includes("college") || q.includes("degree") || q.includes("sgpa") || q.includes("marks") || q.includes("cgpa") || q.includes("study") || q.includes("studying")) {
+    return `**Goutham Acharya's Educational Background:**\n\n1. **Bachelor of Engineering (B.E.) in Artificial Intelligence & Machine Learning (AIML)**\n   - **Institution:** Moodlakatte Institute of Technology\n   - **Timeline:** 2023 - 2027 (Currently in 3rd Year / Expected 2027)\n   - **SGPA:** 7.86\n\n2. **Diploma in Mechanical Engineering**\n   - **Institution:** Government Polytechnic Udupi\n   - **Timeline:** 2021 - 2024 (Completed)\n   - **CGPA:** 7.26`;
+  }
+
+  if (q.includes("project") || q.includes("build") || q.includes("work") || q.includes("portfolio") || q.includes("hallucination") || q.includes("legal") || q.includes("analysis")) {
+    return `**Key Projects Built by Goutham Acharya:**\n\n1. **Personal Portfolio Website**\n   - **Tech Stack:** React, Tailwind CSS, Vite, Node.js, Express REST API\n   - **Details:** Built a responsive modern UI showcasing projects, skills, certifications, and contact options with dynamic backend APIs.\n\n2. **LLM Hallucination Detection**\n   - **Tech Stack:** Python, RAG, Brave Search, LangChain, LLM APIs\n   - **Details:** Integrates multiple LLMs, uses live web retrieval via Brave Search to verify responses against trusted sources, and measures factual accuracy.\n\n3. **Legal AI Assistant (Chatbot)**\n   - **Tech Stack:** Gemini API, Python, RAG, Prompt Engineering, NLP\n   - **Details:** AI-powered legal assistant that answers legal queries, simplifies legal jargon, and helps users understand legal documents.\n\n4. **Data Analysis using Python**\n   - **Tech Stack:** Python, Pandas, NumPy, Matplotlib, EDA\n   - **Details:** Preprocessed tabular datasets, performed exploratory data analysis, and created visual summaries for data-driven insights.`;
+  }
+
+  if (q.includes("skill") || q.includes("python") || q.includes("langchain") || q.includes("rag") || q.includes("stack") || q.includes("tool") || q.includes("framework")) {
+    return `**Goutham Acharya's Technical Skill Set:**\n\n- **Programming:** Python, RESTful APIs, API Integration\n- **Libraries & Frameworks:** Pandas, NumPy, Matplotlib, Scikit-learn, FastAPI, Streamlit, LangChain\n- **AI / ML & NLP:** Machine Learning, Data Preprocessing, Model Training, NLP, Retrieval-Augmented Generation (RAG), LLMs, Prompt Engineering, Vector Databases\n- **Developer Tools:** Antigravity, Google Colab, Jupyter Notebooks, Workflow Automation`;
+  }
+
+  if (q.includes("contact") || q.includes("email") || q.includes("phone") || q.includes("hire") || q.includes("intern") || q.includes("github") || q.includes("reach")) {
+    return `**Get in Touch with Goutham Acharya:**\n\n- **Email:** [gouthamacharya184@gmail.com](mailto:gouthamacharya184@gmail.com)\n- **Phone:** +91 7619573468\n- **GitHub:** [github.com/gouthamacharya184-droid](https://github.com/gouthamacharya184-droid)\n- **Portfolio:** [gouthamacharya.vercel.app](https://gouthamacharya.vercel.app/)\n- **Location:** Udupi, Karnataka, India\n- **Status:** Open for Automation Developer & AI Engineering Internships!`;
+  }
+
+  return `Hello! I am Goutham Acharya's AI Portfolio Assistant.\n\nGoutham is an AIML engineering student (3rd Year, SGPA 7.86) specializing in **Python, LLMs, RAG pipelines, LangChain, AI Agents, and Workflow Automation**.\n\nHere is what you can ask me about:\n- 🎓 **Education & Academic Record**\n- 🚀 **Projects & AI Applications**\n- 🛠️ **Technical Skills & Tools**\n- 📄 **Resume / CV Download**\n- 📬 **Contact Info & Internship Availability**\n\nHow can I assist you today?`;
+}
 
 export const getChatStatus = async (req, res) => {
   const isMaintenanceMode = req.app.locals.isMaintenanceMode || false;
   if (isMaintenanceMode) {
     return res.status(503).json({ status: "offline", reason: "maintenance" });
-  }
-
-  const now = Date.now();
-  if (cachedStatus && (now - lastStatusCheckMs < STATUS_TTL_MS)) {
-    const httpStatus = cachedStatus.status === "online" ? 200 : 503;
-    return res.status(httpStatus).json(cachedStatus);
   }
 
   try {
@@ -90,21 +107,11 @@ export const getChatStatus = async (req, res) => {
       model: GROQ_MODELS[0],
       max_tokens: 1,
     });
-    cachedStatus      = { status: "online" };
-    lastStatusCheckMs = now;
-    return res.status(200).json(cachedStatus);
+    return res.status(200).json({ status: "online", provider: "groq" });
   } catch (error) {
-    logger.warn({ type: "ai_status_check_failed", msg: error.message });
-
-    if (error.message?.includes("429")) {
-      cachedStatus      = { status: "online" };
-      lastStatusCheckMs = now;
-      return res.status(200).json(cachedStatus);
-    }
-
-    cachedStatus      = { status: "offline" };
-    lastStatusCheckMs = now;
-    return res.status(503).json(cachedStatus);
+    logger.warn({ type: "ai_status_check_fallback", msg: error.message });
+    // Always return online so the assistant remains functional via Portfolio Knowledge engine
+    return res.status(200).json({ status: "online", provider: "portfolio_engine" });
   }
 };
 
@@ -128,7 +135,7 @@ export const handleChat = async (req, res) => {
     });
   }
 
-  const rawMessage      = result.data.message;
+  const rawMessage       = result.data.message;
   const sanitizedMessage = sanitizeChatMessage(rawMessage);
 
   const orderedModels = [
@@ -176,8 +183,26 @@ export const handleChat = async (req, res) => {
     }
   }
 
-  return res.status(503).json({
-    ok:      false,
-    message: "The AI assistant is currently under high demand. Please try again in a moment.",
-  });
+  // Fallback to Portfolio Knowledge Engine stream
+  try {
+    const fallbackText = generatePortfolioFallbackResponse(sanitizedMessage);
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.setHeader("Transfer-Encoding", "chunked");
+    res.setHeader("X-AI-Model", "portfolio-knowledge-engine");
+
+    const chunks = fallbackText.match(/.{1,20}/g) || [fallbackText];
+    for (const chunk of chunks) {
+      res.write(chunk);
+      await new Promise((resolve) => setTimeout(resolve, 30));
+    }
+    res.end();
+  } catch (err) {
+    logger.error({ type: "ai_fallback_failed", msg: err.message });
+    if (!res.headersSent) {
+      res.status(500).json({ ok: false, message: "Error processing chat." });
+    } else {
+      res.end();
+    }
+  }
 };
+
