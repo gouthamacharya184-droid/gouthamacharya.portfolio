@@ -62,9 +62,13 @@ When users ask about Goutham Acharya's education, skills, projects, contact info
 - Remember: Reply ONLY in English. Do not write in Hindi, Kannada, Spanish, or any other language. Translate the user query internally and reply in English.`;
 
 const GROQ_MODELS = [
+  "groq/compound-mini",
+  "groq/compound",
+  "qwen/qwen3.6-27b",
+  "openai/gpt-oss-120b",
+  "openai/gpt-oss-20b",
   "llama-3.3-70b-versatile",
   "llama-3.1-8b-instant",
-  "mixtral-8x7b-32768",
 ];
 
 let lastWorkingModelIndex = 0;
@@ -75,26 +79,34 @@ export const getChatStatus = async (req, res) => {
     return res.status(503).json({ status: "offline", reason: "maintenance", message: "AI assistant is in maintenance mode." });
   }
 
-  try {
-    await groq.chat.completions.create({
-      messages: [{ role: "user", content: "ping" }],
-      model: GROQ_MODELS[0],
-      max_tokens: 1,
-    });
-    return res.status(200).json({ status: "online", model: GROQ_MODELS[0] });
-  } catch (error) {
-    logger.warn({ type: "ai_status_check_failed", msg: error.message });
-
-    const isApiKeyError = error.message?.includes("Invalid API Key") || error.status === 401 || error.statusCode === 401;
-
-    return res.status(503).json({
-      status: "offline",
-      reason: isApiKeyError ? "invalid_api_key" : "api_error",
-      message: isApiKeyError
-        ? "Invalid or expired Groq API key. Please update GROQ_API_KEY in environment variables."
-        : `AI Service Error: ${error.message}`,
-    });
+  let lastErr = null;
+  for (let i = 0; i < GROQ_MODELS.length; i++) {
+    const model = GROQ_MODELS[i];
+    try {
+      await groq.chat.completions.create({
+        messages: [{ role: "user", content: "ping" }],
+        model,
+        max_tokens: 1,
+      });
+      lastWorkingModelIndex = i;
+      return res.status(200).json({ status: "online", model });
+    } catch (error) {
+      lastErr = error;
+      const isApiKeyError = error.message?.includes("Invalid API Key") || error.status === 401 || error.statusCode === 401;
+      if (isApiKeyError) break; // Don't loop all models if key is completely invalid
+    }
   }
+
+  logger.warn({ type: "ai_status_check_failed", msg: lastErr?.message });
+  const isApiKeyError = lastErr?.message?.includes("Invalid API Key") || lastErr?.status === 401 || lastErr?.statusCode === 401;
+
+  return res.status(503).json({
+    status: "offline",
+    reason: isApiKeyError ? "invalid_api_key" : "api_error",
+    message: isApiKeyError
+      ? "Invalid or expired Groq API key. Please update GROQ_API_KEY in environment variables."
+      : `AI Service Error: ${lastErr?.message || "All models unavailable"}`,
+  });
 };
 
 export const handleChat = async (req, res) => {
