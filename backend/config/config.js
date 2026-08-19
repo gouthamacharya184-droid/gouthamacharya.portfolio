@@ -21,7 +21,18 @@ const FRONTEND_URL = optionalEnv("FRONTEND_URL", "https://gouthamacharya.vercel.
 const GROQ_KEY     = optionalEnv("GROQ_API_KEY", "");
 const WHATSAPP_NUM = optionalEnv("WHATSAPP_NUMBER", "7619573468");
 const GITHUB_RAW   = optionalEnv("GITHUB_URL", "https://github.com/gouthamacharya184-droid");
-const JWT_SECRET   = optionalEnv("JWT_SECRET", "7711d0da920819ea785ae3153ac9ecfd92d530cf89913b44d74c02793c052671bc85debef414ce4a2069b579b8c8f24b9f0f532f5ff19bbb41a97735e0d0dd48");
+
+// ⚠️ SECURITY: JWT_SECRET must be set as an environment variable.
+// A previously hardcoded fallback was removed — it was in git history and must be treated as compromised.
+// Set a new value in Render: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+const JWT_SECRET   = optionalEnv("JWT_SECRET", "");
+if (!JWT_SECRET || JWT_SECRET.length < 32) {
+  console.error(
+    "[config] CRITICAL: JWT_SECRET is not set or too short. Admin endpoints are disabled until this is fixed.\n" +
+    "  Generate: node -e \"console.log(require('crypto').randomBytes(64).toString('hex'))\"\n" +
+    "  Set it in Render Dashboard → Environment Variables."
+  );
+}
 
 if (!/^\d{7,15}$/.test(WHATSAPP_NUM)) {
   console.warn(`[config] WHATSAPP_NUMBER should contain only digits (7–15 chars). Got: "${WHATSAPP_NUM.slice(0, 4)}..."`);

@@ -1,4 +1,3 @@
-import cors             from "cors";
 import compression     from "compression";
 import express          from "express";
 import helmet           from "helmet";
@@ -111,41 +110,6 @@ app.use((req, res, next) => {
   if (req.method === "OPTIONS") {
     return res.status(204).end();
   }
-
-  next();
-});
-
-app.use((req, res, next) => {
-  const reqId = req.headers["x-request-id"] || `req_${Math.random().toString(36).slice(2, 11)}`;
-  req.requestId = reqId;
-
-  const clientIp =
-    req.headers["x-forwarded-for"]?.split(",")[0].trim() ||
-    req.socket.remoteAddress ||
-    "unknown";
-  req.clientIp = clientIp;
-
-  res.setHeader("X-Request-ID", reqId);
-
-  logger.info({
-    type:      "request_in",
-    method:    req.method,
-    path:      req.path,
-    requestId: reqId,
-    ip:        clientIp,
-  });
-
-  const start = Date.now();
-  res.on("finish", () => {
-    logger.info({
-      type:       "request_out",
-      method:     req.method,
-      path:       req.path,
-      status:     res.statusCode,
-      durationMs: Date.now() - start,
-      requestId:  reqId,
-    });
-  });
 
   next();
 });
