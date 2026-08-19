@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Bot, Sparkles, X, Plus, Maximize2 } from 'lucide-react';
 import { useChatContext } from '../hooks/useChat';
 import { useSpeech } from '../hooks/useSpeech';
-import { checkChatStatus } from '../utils/chatApi';
+import { checkChatStatus, checkBackendHealth } from '../utils/chatApi';
 
 import ChatLayout from '../layouts/ChatLayout';
 import ChatMessages from '../components/chat/ChatMessages';
@@ -26,7 +26,11 @@ function savePrefs(prefs) {
 }
 
 export default function ChatbotPage({ apiBaseUrl }) {
-  const defaultBaseUrl = (apiBaseUrl || '').replace(/\/$/, '') || window.location.origin;
+  // Use VITE_API_BASE_URL in production (Vercel → Render).
+  // Fall back to the actual Render backend URL — NOT window.location.origin,
+  // which would point to Vercel (frontend-only, no /api/* routes).
+  const RENDER_BACKEND = 'https://goutham-portfolio-backend.onrender.com';
+  const defaultBaseUrl = (apiBaseUrl || '').replace(/\/$/, '') || RENDER_BACKEND;
   const [preferences, setPreferences] = useState(() => loadPrefs(defaultBaseUrl));
 
   const baseUrl = preferences.baseUrl;
@@ -77,16 +81,28 @@ export default function ChatbotPage({ apiBaseUrl }) {
     if (isOpen && !isFullscreen) scrollToWidgetBottom();
   }, [messages, isTyping, isOpen, isFullscreen, scrollToWidgetBottom]);
 
-  // ── Status check — runs on mount AND every 60s ──────────────────────────────
+  // ── Status check — 2-phase: /health first (90s cold-start), then /chat/status ──
   useEffect(() => {
     let cancelled = false;
+
     const check = async () => {
       const status = await checkChatStatus(baseUrl);
       if (!cancelled) setAiStatus(status);
     };
+
     check();
     const interval = setInterval(check, 60_000);
-    return () => { cancelled = true; clearInterval(interval); };
+
+    // Keep-alive every 14 min to prevent Render free-tier sleep
+    const keepAlive = setInterval(async () => {
+      if (!cancelled) await checkBackendHealth(baseUrl);
+    }, 14 * 60 * 1000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      clearInterval(keepAlive);
+    };
   }, [baseUrl]);
 
   // Unread badge
@@ -135,16 +151,17 @@ export default function ChatbotPage({ apiBaseUrl }) {
     document.body.removeChild(a); URL.revokeObjectURL(url);
   }, [messages]);
 
-  // Only show the FAB when AI is online (ready to respond)
-  const statusResolved = aiStatus === 'online';
-
-  // Auto-close chat if it goes offline
+  // Auto-close chat only if truly offline (server unreachable)
+  // Keep open during waking/degraded so user sees the status banner
   useEffect(() => {
     if (aiStatus === 'offline') {
       setIsOpen(false);
       setIsFullscreen(false);
     }
   }, [aiStatus]);
+
+  // FAB visible when status is resolved (not checking/offline)
+  const statusResolved = aiStatus === 'online' || aiStatus === 'waking' || aiStatus === 'degraded';
 
   return (
     <>
@@ -246,7 +263,11 @@ export default function ChatbotPage({ apiBaseUrl }) {
                     <Bot size={20} className="text-cyan-400" />
                   </div>
                   <div className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#071225] ${
-                    aiStatus === 'online' ? 'bg-emerald-400 animate-pulse' : aiStatus === 'offline' ? 'bg-red-400' : 'bg-amber-400 animate-pulse'
+                    aiStatus === 'online'   ? 'bg-emerald-400 animate-pulse' :
+                    aiStatus === 'waking'   ? 'bg-amber-400 animate-pulse' :
+                    aiStatus === 'degraded' ? 'bg-orange-400 animate-pulse' :
+                    aiStatus === 'offline'  ? 'bg-red-400' :
+                    'bg-amber-400 animate-pulse'
                   }`} />
                 </div>
                 <div>
@@ -255,9 +276,17 @@ export default function ChatbotPage({ apiBaseUrl }) {
                     <Sparkles size={11} className="text-cyan-400 opacity-60" />
                   </div>
                   <span className={`text-[9px] uppercase tracking-wider font-bold block -mt-0.5 ${
-                    aiStatus === 'online' ? 'text-emerald-400' : aiStatus === 'offline' ? 'text-red-400' : 'text-amber-400'
+                    aiStatus === 'online'   ? 'text-emerald-400' :
+                    aiStatus === 'waking'   ? 'text-amber-400' :
+                    aiStatus === 'degraded' ? 'text-orange-400' :
+                    aiStatus === 'offline'  ? 'text-red-400' :
+                    'text-amber-400'
                   }`}>
-                    {aiStatus === 'online' ? 'Online' : aiStatus === 'offline' ? 'Offline' : 'Connecting…'}
+                    {aiStatus === 'online'   ? 'Online' :
+                     aiStatus === 'waking'   ? 'Waking Up…' :
+                     aiStatus === 'degraded' ? 'AI Degraded' :
+                     aiStatus === 'offline'  ? 'Offline' :
+                     'Connecting…'}
                   </span>
                 </div>
               </div>
@@ -289,12 +318,20 @@ export default function ChatbotPage({ apiBaseUrl }) {
               </div>
             </div>
 
-            {/* Offline Warning Banner */}
-            {aiStatus === 'offline' && (
-              <div className="flex items-center gap-2 px-4 py-2.5 bg-rose-500/10 border-b border-rose-500/20 flex-shrink-0">
-                <span className="inline-block h-2 w-2 rounded-full bg-rose-500 shrink-0" />
-                <span className="text-rose-400 text-[11px] font-medium">
-                  AI assistant is currently offline. Please try again later.
+            {/* Status Banners */}
+            {aiStatus === 'waking' && (
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-amber-500/10 border-b border-amber-500/20 flex-shrink-0">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
+                <span className="text-amber-400 text-[11px] font-medium">
+                  Waking up the server… first response may take ~30s.
+                </span>
+              </div>
+            )}
+            {aiStatus === 'degraded' && (
+              <div className="flex items-center gap-2 px-4 py-2.5 bg-orange-500/10 border-b border-orange-500/20 flex-shrink-0">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-orange-400 animate-pulse shrink-0" />
+                <span className="text-orange-400 text-[11px] font-medium">
+                  Backend is running but AI service needs attention.
                 </span>
               </div>
             )}
@@ -325,7 +362,7 @@ export default function ChatbotPage({ apiBaseUrl }) {
                 onSend={handleSend}
                 isTyping={isTyping}
                 fullscreen={false}
-                disabled={aiStatus === 'offline'}
+                disabled={aiStatus === 'offline' || aiStatus === 'checking'}
               />
             </div>
           </motion.div>

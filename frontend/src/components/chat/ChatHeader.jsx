@@ -6,12 +6,15 @@ import {
 
 function StatusDot({ status }) {
   const colors = {
-    online: 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]',
-    offline: 'bg-red-400',
+    online:   'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]',
+    waking:   'bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.6)]',
+    degraded: 'bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.6)]',
+    offline:  'bg-red-400',
     checking: 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]',
   };
+  const shouldPulse = status !== 'offline';
   return (
-    <span className={`inline-block rounded-full h-2 w-2 ${colors[status] ?? colors.checking} ${status !== 'offline' ? 'animate-pulse' : ''}`} />
+    <span className={`inline-block rounded-full h-2 w-2 ${colors[status] ?? colors.checking} ${shouldPulse ? 'animate-pulse' : ''}`} />
   );
 }
 
@@ -67,9 +70,17 @@ export default function ChatHeader({
           <div className="flex items-center gap-1.5 pl-2 border-l border-white/5">
             <StatusDot status={aiStatus} />
             <span className={`text-[10px] uppercase tracking-wider font-bold ${
-              aiStatus === 'online' ? 'text-emerald-400 animate-pulse' : aiStatus === 'offline' ? 'text-red-400' : 'text-amber-400'
+              aiStatus === 'online'   ? 'text-emerald-400 animate-pulse' :
+              aiStatus === 'waking'   ? 'text-amber-400' :
+              aiStatus === 'degraded' ? 'text-orange-400' :
+              aiStatus === 'offline'  ? 'text-red-400' :
+              'text-amber-400'
             }`}>
-              {aiStatus === 'online' ? 'Online' : aiStatus === 'offline' ? 'Offline' : 'Connecting…'}
+              {aiStatus === 'online'   ? 'Online' :
+               aiStatus === 'waking'   ? 'Waking Up…' :
+               aiStatus === 'degraded' ? 'AI Degraded' :
+               aiStatus === 'offline'  ? 'Offline' :
+               'Connecting…'}
             </span>
           </div>
         </div>
