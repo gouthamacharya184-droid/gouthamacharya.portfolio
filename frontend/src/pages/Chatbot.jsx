@@ -4,6 +4,7 @@ import { Bot, Sparkles, X, Plus, Maximize2 } from 'lucide-react';
 import { useChatContext } from '../hooks/useChat';
 import { useSpeech } from '../hooks/useSpeech';
 import { checkChatStatus, checkBackendHealth } from '../utils/chatApi';
+import { getApiBaseUrl } from '../utils/api';
 
 import ChatLayout from '../layouts/ChatLayout';
 import ChatMessages from '../components/chat/ChatMessages';
@@ -26,11 +27,7 @@ function savePrefs(prefs) {
 }
 
 export default function ChatbotPage({ apiBaseUrl }) {
-  // Use VITE_API_BASE_URL in production (Vercel → Render).
-  // Fall back to the actual Render backend URL — NOT window.location.origin,
-  // which would point to Vercel (frontend-only, no /api/* routes).
-  const RENDER_BACKEND = 'https://goutham-portfolio-backend.onrender.com';
-  const defaultBaseUrl = (apiBaseUrl || '').replace(/\/$/, '') || RENDER_BACKEND;
+  const defaultBaseUrl = getApiBaseUrl(apiBaseUrl);
   const [preferences, setPreferences] = useState(() => loadPrefs(defaultBaseUrl));
 
   const baseUrl = preferences.baseUrl;

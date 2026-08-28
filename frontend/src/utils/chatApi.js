@@ -15,6 +15,21 @@
  *   "offline"   — server not reachable after 90s timeout
  */
 
+import { getApiBaseUrl } from './api';
+
+function createTimeoutSignal(ms) {
+  try {
+    if (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function') {
+      return AbortSignal.timeout(ms);
+    }
+  } catch {
+    // fallback
+  }
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  return controller.signal;
+}
+
 /**
  * Check if the backend server itself is alive.
  * Uses a 90-second timeout to handle Render free-tier cold-starts.
@@ -23,8 +38,9 @@
  */
 export async function checkBackendHealth(baseUrl) {
   try {
-    const res = await fetch(`${baseUrl}/api/health`, {
-      signal: AbortSignal.timeout(90_000), // 90s for cold-start
+    const base = getApiBaseUrl(baseUrl);
+    const res = await fetch(`${base}/api/health`, {
+      signal: createTimeoutSignal(90_000), // 90s for cold-start
       cache: 'no-store',
     });
     return res.ok ? 'alive' : 'offline';
@@ -41,8 +57,9 @@ export async function checkBackendHealth(baseUrl) {
  */
 export async function checkAIStatus(baseUrl) {
   try {
-    const res = await fetch(`${baseUrl}/api/chat/status`, {
-      signal: AbortSignal.timeout(15_000),
+    const base = getApiBaseUrl(baseUrl);
+    const res = await fetch(`${base}/api/chat/status`, {
+      signal: createTimeoutSignal(15_000),
       cache: 'no-store',
     });
     if (!res.ok && res.status !== 304) return 'offline';
@@ -69,11 +86,12 @@ export async function checkAIStatus(baseUrl) {
  * @returns {Promise<"online"|"waking"|"degraded"|"offline">}
  */
 export async function checkChatStatus(baseUrl) {
-  const health = await checkBackendHealth(baseUrl);
+  const base = getApiBaseUrl(baseUrl);
+  const health = await checkBackendHealth(base);
   if (health === 'offline') return 'offline';
 
   // Server is alive — now check AI specifically
-  const aiStatus = await checkAIStatus(baseUrl);
+  const aiStatus = await checkAIStatus(base);
   return aiStatus; // "online" | "degraded" | "offline"
 }
 
@@ -84,7 +102,8 @@ export async function checkChatStatus(baseUrl) {
  * @returns {Promise<Response>}
  */
 export async function sendChatMessage(baseUrl, message) {
-  return fetch(`${baseUrl}/api/chat`, {
+  const base = getApiBaseUrl(baseUrl);
+  return fetch(`${base}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message }),

@@ -32,6 +32,7 @@ import Blog from "./components/Blog";
 import Testimonials from "./components/Testimonials";
 import { ChatProvider } from "./hooks/useChat";
 import NeuralNetworkBackground from "./components/NeuralNetworkBackground";
+import { getApiBaseUrl } from "./utils/api";
 
 // ── Loader ────────────────────────────────────────────────────────────────────
 
@@ -68,7 +69,7 @@ export default function App() {
 
   // Derive the API base URL once.
   const apiBaseUrl = useMemo(() => {
-    return import.meta.env.VITE_API_BASE_URL ?? "";
+    return getApiBaseUrl();
   }, []);
 
   useEffect(() => {

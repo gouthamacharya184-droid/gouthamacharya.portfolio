@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { getApiBaseUrl } from "../utils/api";
 import {
   Award,
   BadgeCheck,
@@ -61,11 +62,7 @@ export function PortfolioProvider({ children, apiBaseUrl = "" }) {
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
 
-  // In production (Vercel), VITE_API_BASE_URL must point to the Render backend.
-  // Hardcode the Render URL as a last-resort fallback so the portfolio never
-  // silently loads nothing if the env var is missing.
-  const RENDER_BACKEND = 'https://goutham-portfolio-backend.onrender.com';
-  const base = (apiBaseUrl || '').replace(/\/$/, '') || RENDER_BACKEND;
+  const base = getApiBaseUrl(apiBaseUrl);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);

@@ -17,9 +17,9 @@
       script-src 'self' 'unsafe-inline';
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com;
-      img-src 'self' data: blob:;
-      connect-src 'self';
-      frame-src 'none';
+      img-src 'self' data: blob: https:;
+      connect-src 'self' https://goutham-portfolio-backend.onrender.com https://*.onrender.com https://*.ngrok-free.app https://*.ngrok.io https://*.vercel.app http://localhost:* http://127.0.0.1:* https:;
+      frame-src 'self' data: blob: about:;
       object-src 'none';
       base-uri 'self';
       form-action 'self';
@@ -31,13 +31,13 @@
     <meta name="keywords" content="Goutham Acharya, AIML portfolio, Python developer, machine learning, NLP, LLM, prompt engineering, RAG" />
     <meta name="author" content="Goutham Acharya" />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://gouthamacharya.dev" />
+    <link rel="canonical" href="https://gouthamacharya.vercel.app" />
 
     <!-- Open Graph -->
     <meta property="og:title" content="Goutham Acharya | AI &amp; ML Portfolio" />
     <meta property="og:description" content="AI &amp; Machine Learning student building practical NLP and LLM workflows. Open to internships." />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://gouthamacharya.dev" />
+    <meta property="og:url" content="https://gouthamacharya.vercel.app" />
     <meta property="og:image" content="/api/assets/profile.webp" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />

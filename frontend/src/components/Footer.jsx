@@ -8,12 +8,13 @@
  */
 
 import { usePortfolio, resolveIcon } from "../hooks/usePortfolio";
+import { getApiBaseUrl } from "../utils/api";
 
 export default function Footer({ apiBaseUrl }) {
   const { portfolio } = usePortfolio();
   const githubUrl  = portfolio?.profile?.github ?? "https://github.com";
   const socialLinks = portfolio?.socialLinks ?? [];
-  const backendUrl = (apiBaseUrl ?? "").replace(/\/$/, "");
+  const backendUrl = getApiBaseUrl(apiBaseUrl);
   const year = new Date().getFullYear();
 
   return (

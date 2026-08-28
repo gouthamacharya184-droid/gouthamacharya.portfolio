@@ -21,24 +21,18 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Trust reverse proxy (Render, Vercel, Cloudflare) for accurate client IP in rate limiters
+app.set("trust proxy", 1);
+
 app.locals.isMaintenanceMode = false;
 
 app.disable("x-powered-by");
 
 app.use(
   helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc:  ["'self'"],
-        scriptSrc:   ["'none'"],
-        styleSrc:    ["'none'"],
-        imgSrc:      ["'none'"],
-        connectSrc:  ["'self'"],
-        frameAncestors: ["'none'"],
-        baseUri:     ["'self'"],
-        formAction:  ["'self'"],
-      },
-    },
+    contentSecurityPolicy: false, // CSP is managed on frontend/client
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginEmbedderPolicy: false,
     hsts: {
       maxAge:            31_536_000,
       includeSubDomains: true,
@@ -101,8 +95,9 @@ app.use((req, res, next) => {
   if (origin && isOriginAllowed(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key, X-Request-ID");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key, X-Request-ID, X-Requested-With, Accept, Cache-Control, Pragma, If-None-Match");
     res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Max-Age", "86400");
   } else if (!origin) {
     res.setHeader("Access-Control-Allow-Origin", "*");
   }

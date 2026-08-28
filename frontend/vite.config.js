@@ -48,5 +48,17 @@ export default defineConfig(({ mode }) => {
     preview: {
       port: 4173,
     },
+    build: {
+      chunkSizeWarningLimit: 800,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom'],
+            motion: ['framer-motion'],
+            icons: ['lucide-react'],
+          },
+        },
+      },
+    },
   };
 });

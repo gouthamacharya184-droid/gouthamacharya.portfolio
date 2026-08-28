@@ -14,6 +14,7 @@ import { useMemo, useState } from "react";
 import Section from "./Section";
 import { usePortfolio, resolveIcon } from "../hooks/usePortfolio";
 import { fadeUp } from "../utils/motion";
+import { getApiBaseUrl } from "../utils/api";
 
 // NOTE: DISPLAY_EMAIL is now served from the backend (portfolio.profile.displayEmail).
 // This constant is intentionally removed from the frontend — all portfolio content
@@ -75,7 +76,7 @@ export default function Contact({ apiBaseUrl }) {
   const [status, setStatus] = useState({ type: "idle", message: "" });
   const [loading, setLoading] = useState(false);
 
-  const backendUrl = useMemo(() => apiBaseUrl.replace(/\/$/, ""), [apiBaseUrl]);
+  const backendUrl = useMemo(() => getApiBaseUrl(apiBaseUrl), [apiBaseUrl]);
 
   const onChange = (e) => {
     const { name, value } = e.target;

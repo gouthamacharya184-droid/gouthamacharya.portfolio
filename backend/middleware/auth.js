@@ -114,11 +114,9 @@ export function requireApiKey(req, res, next) {
 
   const providedKey = req.headers["x-api-key"] || "";
 
-  const expectedBuf = Buffer.from(config.adminApiKey,  "utf8");
-  const providedBuf = Buffer.from(providedKey,         "utf8");
-  const isValid =
-    expectedBuf.length === providedBuf.length &&
-    crypto.timingSafeEqual(expectedBuf, providedBuf);
+  const expectedHash = crypto.createHash("sha256").update(String(config.adminApiKey)).digest();
+  const providedHash = crypto.createHash("sha256").update(String(providedKey)).digest();
+  const isValid = crypto.timingSafeEqual(expectedHash, providedHash);
 
   if (!isValid) {
     res.securityEvent?.("API_KEY_REJECTED", { path: req.path });

@@ -11,6 +11,7 @@ import { checkChatStatus, checkBackendHealth } from '../utils/chatApi';
 import MessageBubble from './chat/MessageBubble';
 import { useChatContext } from '../hooks/useChat';
 import { formatTime } from '../utils/utils';
+import { getApiBaseUrl } from '../utils/api';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 const MAX_MESSAGE_LENGTH = 5000;
@@ -40,7 +41,7 @@ const PROMPT_CASES = [
 ];
 
 export default function AIChatSection({ apiBaseUrl }) {
-  const baseUrl = (apiBaseUrl || '').replace(/\/$/, '');
+  const baseUrl = getApiBaseUrl(apiBaseUrl);
   const scrollRef = useRef(null);
 
   // ── Global Context ───────────────────────────────────────────────────────────

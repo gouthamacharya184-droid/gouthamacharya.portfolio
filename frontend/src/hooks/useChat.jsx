@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useMemo, useRef } from 'react';
 import { sendChatMessage } from '../utils/chatApi';
 import { makeId, truncate } from '../utils/utils';
+import { getApiBaseUrl } from '../utils/api';
 
 const ChatContext = createContext(null);
 
@@ -27,11 +28,7 @@ function deriveSessionTitle(messages) {
 const INITIAL_SESSION = makeSession('New Chat');
 
 export function ChatProvider({ children, apiBaseUrl }) {
-  // Use VITE_API_BASE_URL in production (Vercel → Render).
-  // If not set, fall back to the known Render backend URL so the chatbot
-  // still works even if the env var was forgotten in Vercel dashboard.
-  const RENDER_BACKEND = 'https://goutham-portfolio-backend.onrender.com';
-  const baseUrl = (apiBaseUrl || '').replace(/\/$/, '') || RENDER_BACKEND;
+  const baseUrl = getApiBaseUrl(apiBaseUrl);
 
   const [sessions, setSessions] = useState([INITIAL_SESSION]);
   const [activeSessionId, setActiveSessionId] = useState(INITIAL_SESSION.id);

@@ -14,11 +14,9 @@ export const handleLogin = (req, res) => {
     return res.status(503).json({ ok: false, message: "Admin authentication is disabled." });
   }
 
-  const expectedBuf = Buffer.from(config.adminApiKey, "utf8");
-  const providedBuf = Buffer.from(password, "utf8");
-  const isValid =
-    expectedBuf.length === providedBuf.length &&
-    crypto.timingSafeEqual(expectedBuf, providedBuf);
+  const expectedHash = crypto.createHash("sha256").update(String(config.adminApiKey)).digest();
+  const providedHash = crypto.createHash("sha256").update(String(password)).digest();
+  const isValid = crypto.timingSafeEqual(expectedHash, providedHash);
 
   if (!isValid) {
     res.securityEvent?.("ADMIN_LOGIN_FAILED");

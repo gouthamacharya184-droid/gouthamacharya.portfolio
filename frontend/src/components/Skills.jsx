@@ -1,11 +1,24 @@
 import { motion, AnimatePresence } from "framer-motion";
 import Section from "./Section";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { usePortfolio, resolveIcon } from "../hooks/usePortfolio";
 import DataSkeleton from "./DataSkeleton";
 
 export default function Skills() {
   const { portfolio, loading } = usePortfolio();
+
+  const skillGroups = useMemo(() => (portfolio?.skillGroups ?? []).map((g) => ({
+    ...g,
+    IconComponent: resolveIcon(g.icon),
+  })), [portfolio?.skillGroups]);
+
+  const [activeTab, setActiveTab] = useState(skillGroups[0]?.title ?? "");
+
+  useEffect(() => {
+    if (!activeTab && skillGroups.length > 0) {
+      setActiveTab(skillGroups[0].title);
+    }
+  }, [skillGroups, activeTab]);
 
   if (loading) return (
     <Section id="skills" eyebrow="Skills" title="Tools and technologies I work with." description="">
@@ -13,13 +26,8 @@ export default function Skills() {
     </Section>
   );
 
-  const skillGroups = (portfolio?.skillGroups ?? []).map((g) => ({
-    ...g,
-    IconComponent: resolveIcon(g.icon),
-  }));
-
-  const [activeTab, setActiveTab] = useState(skillGroups[0]?.title ?? "");
-  const activeGroup = skillGroups.find((g) => g.title === activeTab);
+  const activeGroup = skillGroups.find((g) => g.title === activeTab) || skillGroups[0];
+  const skillsList = activeGroup?.skills ?? [];
 
   return (
     <Section
@@ -60,7 +68,7 @@ export default function Skills() {
       {/* Skill chips */}
       <AnimatePresence mode="wait">
         <motion.div
-          key={activeTab}
+          key={activeTab || "default"}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -6 }}
@@ -71,7 +79,7 @@ export default function Skills() {
           <div className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-cyan-500/8 blur-2xl pointer-events-none" />
 
           <div className="flex flex-wrap gap-2.5 xs:gap-3 relative z-10">
-            {activeGroup.skills.map((skill, index) => (
+            {skillsList.map((skill, index) => (
               <motion.span
                 key={skill.name}
                 initial={{ opacity: 0, scale: 0.85 }}
@@ -86,7 +94,7 @@ export default function Skills() {
 
           {/* Chip count label */}
           <p className="mt-6 text-[10px] uppercase tracking-[0.25em] text-slate-600 font-medium">
-            {activeGroup.skills.length} skill{activeGroup.skills.length !== 1 ? "s" : ""} in this category
+            {skillsList.length} skill{skillsList.length !== 1 ? "s" : ""} in this category
           </p>
         </motion.div>
       </AnimatePresence>

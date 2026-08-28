@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useState, useEffect, useRef } from "react";
 import ProgressiveImage from "./ProgressiveImage";
 import { usePortfolio } from "../hooks/usePortfolio";
+import { apiUrl } from "../utils/api";
 
 const typewriterWords = [
   "Python Developer",
@@ -299,7 +300,7 @@ export default function Hero() {
                 View My Work <ArrowDown size={15} strokeWidth={2.5} />
               </a>
               <a
-                href={profile?.resumeUrl || "/api/portfolio/resume"}
+                href={apiUrl(profile?.resumeUrl || "/api/portfolio/resume")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md px-5 xs:px-6 py-3 xs:py-3.5 text-sm font-semibold text-slate-200 hover:bg-white/10 hover:border-cyan-400/35 hover:text-cyan-300 hover:shadow-[0_0_20px_rgba(34,211,238,0.15)] transition-all duration-200 min-h-[48px] w-full sm:w-auto"
@@ -324,7 +325,9 @@ export default function Hero() {
                 <Github size={15} /> GitHub
               </a>
               <a
-                href="#contact"
+                href={apiUrl("/api/social/whatsapp")}
+                target="_blank"
+                rel="noreferrer"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#071225]/90 px-4 xs:px-5 py-2.5 xs:py-3 text-xs xs:text-sm text-slate-300 hover:border-cyan-400/30 hover:text-white transition-all duration-200 min-h-[48px]"
               >
                 <MessageCircle size={15} /> WhatsApp

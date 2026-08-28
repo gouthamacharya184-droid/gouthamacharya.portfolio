@@ -65,7 +65,10 @@ export default function About() {
     );
   }
 
-  const { profile, highlights, strengthCards, certifications } = portfolio;
+  const profile = portfolio?.profile ?? { objective: "" };
+  const highlights = portfolio?.highlights ?? [];
+  const strengthCards = portfolio?.strengthCards ?? [];
+  const certifications = portfolio?.certifications ?? [];
 
   // Memoize icon resolution — avoids re-computing on every render
   const resolvedHighlights = useMemo(

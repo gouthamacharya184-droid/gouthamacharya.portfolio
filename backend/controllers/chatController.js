@@ -62,13 +62,10 @@ When users ask about Goutham Acharya's education, skills, projects, contact info
 - Remember: Reply ONLY in English. Do not write in Hindi, Kannada, Spanish, or any other language. Translate the user query internally and reply in English.`;
 
 const GROQ_MODELS = [
-  "groq/compound-mini",
-  "groq/compound",
-  "qwen/qwen3.6-27b",
-  "openai/gpt-oss-120b",
-  "openai/gpt-oss-20b",
   "llama-3.3-70b-versatile",
   "llama-3.1-8b-instant",
+  "mixtral-8x7b-32768",
+  "gemma2-9b-it",
 ];
 
 let lastWorkingModelIndex = 0;
@@ -77,6 +74,14 @@ export const getChatStatus = async (req, res) => {
   const isMaintenanceMode = req.app.locals.isMaintenanceMode || false;
   if (isMaintenanceMode) {
     return res.status(503).json({ status: "offline", reason: "maintenance", message: "AI assistant is in maintenance mode." });
+  }
+
+  if (!config.groqApiKey) {
+    return res.status(503).json({
+      status: "offline",
+      reason: "missing_api_key",
+      message: "GROQ_API_KEY is not configured in backend environment variables.",
+    });
   }
 
   let lastErr = null;
@@ -115,6 +120,13 @@ export const handleChat = async (req, res) => {
     return res.status(503).json({
       ok:      false,
       message: "The AI assistant is temporarily offline for maintenance. Please try again later.",
+    });
+  }
+
+  if (!config.groqApiKey) {
+    return res.status(503).json({
+      ok:      false,
+      message: "AI assistant service is not configured. Please set GROQ_API_KEY in environment variables.",
     });
   }
 
