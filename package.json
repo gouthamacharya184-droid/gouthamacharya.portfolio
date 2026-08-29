@@ -4,11 +4,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "postinstall": "npm --prefix frontend install",
     "build": "npm --prefix frontend run build",
-    "build:frontend": "npm --prefix frontend run build",
-    "dev:frontend": "npm --prefix frontend run dev",
-    "dev:backend": "npm --prefix backend run dev"
+    "dev": "npm --prefix frontend run dev"
   },
   "dependencies": {
     "groq-sdk": "^1.2.0",
