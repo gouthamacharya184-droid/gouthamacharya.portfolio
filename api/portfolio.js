@@ -16,7 +16,7 @@ export default function handler(req, res) {
     return res.status(204).end();
   }
 
-  if (req.headers["if-none-match"] === portfolioETag) {
+  if (req.headers?.["if-none-match"] === portfolioETag) {
     return res.status(304).end();
   }
 
