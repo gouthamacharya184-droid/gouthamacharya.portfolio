@@ -196,7 +196,7 @@ export default function Hero() {
               <div className="relative rounded-[1.25rem] xs:rounded-[1.5rem] border border-cyan-400/20 bg-white/5 p-1.5 xs:p-2 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.4)] xs:shadow-[0_30px_80px_rgba(0,0,0,0.5)]">
                 <div className="absolute inset-0 rounded-[1.25rem] xs:rounded-[1.5rem] shadow-[inset_0_0_20px_rgba(34,211,238,0.1)] pointer-events-none" />
                 <ProgressiveImage
-                  src="/api/assets/profile.webp"
+                  src="/profile.webp"
                   alt="Goutham Acharya profile photo"
                   loading="eager"
                   className="w-full h-auto max-h-[300px] xs:max-h-[360px] sm:max-h-[420px] md:max-h-[480px] lg:max-h-[460px] object-cover object-top rounded-[1rem] xs:rounded-[1.2rem]"
