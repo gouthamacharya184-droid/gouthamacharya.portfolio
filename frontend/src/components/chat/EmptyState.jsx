@@ -1,42 +1,35 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Bot, Sparkles, Code, User, Send, Mail } from 'lucide-react';
+import { Bot, HelpCircle, Code, Briefcase, FileText, Send } from 'lucide-react';
 
 const SUGGESTIONS = [
   {
-    text: "Tell me about his AI/ML projects",
-    label: "AI Projects",
-    icon: Sparkles,
+    icon: HelpCircle,
+    label: "Background",
+    text: "Tell me about Goutham's AI engineering background."
   },
   {
-    text: "What is his technical stack?",
-    label: "Tech Stack",
     icon: Code,
+    label: "Skills",
+    text: "What tools and frameworks is he expert in?"
   },
   {
-    text: "Tell me about his experience",
-    label: "Experience",
-    icon: User,
+    icon: Briefcase,
+    label: "Projects",
+    text: "Show me his top AI / RAG projects."
   },
   {
-    text: "How can I contact Goutham?",
-    label: "Contact Info",
-    icon: Mail,
-  },
+    icon: FileText,
+    label: "Contact",
+    text: "How can I contact Goutham or view his resume?"
+  }
 ];
 
-export default function EmptyState({ onSend, fullscreen = false }) {
+export default function EmptyState({ onSend, fullscreen, disabled = false }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className={`flex flex-col items-center justify-center text-center px-4 select-none ${
-        fullscreen 
-          ? "min-h-[65vh] gap-8 py-12 max-w-3xl mx-auto" 
-          : "min-h-[300px] gap-4 py-4"
-      }`}
-    >
+    <div className={`w-full flex flex-col items-center justify-center text-center ${
+      fullscreen ? "space-y-8 py-10" : "space-y-6 py-4"
+    }`}>
       <div className="flex flex-col items-center">
         {/* Animated Avatar Glow */}
         <motion.div
@@ -75,10 +68,15 @@ export default function EmptyState({ onSend, fullscreen = false }) {
           return (
             <motion.button
               key={idx}
-              whileHover={{ scale: 1.02, y: -1, backgroundColor: "rgba(255,255,255,0.04)", borderColor: "rgba(34,211,238,0.25)" }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => onSend(item.text)}
-              className={`flex items-center gap-3 text-left rounded-xl bg-white/[0.015] border border-white/5 text-slate-300 hover:text-cyan-300 transition-all duration-200 group relative overflow-hidden shadow-sm cursor-pointer ${
+              whileHover={disabled ? {} : { scale: 1.02, y: -1, backgroundColor: "rgba(255,255,255,0.04)", borderColor: "rgba(34,211,238,0.25)" }}
+              whileTap={disabled ? {} : { scale: 0.98 }}
+              onClick={() => !disabled && onSend(item.text)}
+              disabled={disabled}
+              className={`flex items-center gap-3 text-left rounded-xl bg-white/[0.015] border border-white/5 transition-all duration-200 group relative overflow-hidden shadow-sm ${
+                disabled
+                  ? 'opacity-40 cursor-not-allowed text-slate-500'
+                  : 'text-slate-300 hover:text-cyan-300 cursor-pointer'
+              } ${
                 fullscreen ? "px-4 py-3" : "px-3 py-2.5"
               }`}
             >
@@ -99,6 +97,12 @@ export default function EmptyState({ onSend, fullscreen = false }) {
           );
         })}
       </div>
-    </motion.div>
+
+      {disabled && (
+        <p className="text-rose-400/70 text-[11px] font-medium mt-2">
+          AI assistant is currently offline. Please try again later.
+        </p>
+      )}
+    </div>
   );
 }

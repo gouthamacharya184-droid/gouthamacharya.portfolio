@@ -8,8 +8,14 @@
 .env
 .env.local
 .env.*.local
+.env.production
+.env.development
 backend/.env
 frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+.vercel
+.vercel/
 
 # ── Node Modules ─────────────────────────────────────────────────────────────
 node_modules/

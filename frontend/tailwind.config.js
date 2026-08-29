@@ -2,6 +2,20 @@
 export default {
   darkMode: "class",
   content: ["./index.html", "./src/**/*.{js,jsx}"],
+  // Fix 23: Safelist for dynamic classes that come from backend portfolio.js data.
+  // These classes are used as string values in portfolio data objects and would
+  // be removed by Tailwind's content scanner in production builds without this list.
+  safelist: [
+    // Blog status colors
+    "text-amber-400", "text-cyan-400", "text-emerald-400",
+    "text-violet-400", "text-rose-400",
+    // Blog/cert/achievement backgrounds
+    "bg-amber-500/10", "bg-cyan-500/10", "bg-emerald-500/10",
+    "bg-violet-500/10", "bg-rose-500/10",
+    // Blog/cert/achievement borders
+    "border-amber-400/20", "border-cyan-400/20", "border-emerald-400/20",
+    "border-violet-400/20", "border-rose-400/20",
+  ],
   theme: {
     screens: {
       xxs: "320px",
@@ -16,7 +30,7 @@ export default {
       fontFamily: {
         sans: ["Inter", "ui-sans-serif", "system-ui", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
         display: ["Outfit", "ui-sans-serif", "system-ui"],
-        heading: ["Plus Jakarta Sans", "Outfit", "ui-sans-serif", "system-ui"],
+        heading: ["Outfit", "ui-sans-serif", "system-ui"],
         body: ["Inter", "ui-sans-serif", "system-ui"],
       },
       colors: {

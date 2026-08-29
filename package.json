@@ -2,13 +2,17 @@
   "name": "goutham-portfolio-monorepo",
   "private": true,
   "version": "1.0.0",
+  "type": "module",
   "scripts": {
-    "postinstall": "npm --prefix frontend install && npm --prefix backend install",
-    "build": "npm --prefix frontend install && npm --prefix frontend run build",
+    "postinstall": "npm --prefix frontend install",
+    "build": "npm --prefix frontend run build",
     "build:frontend": "npm --prefix frontend run build",
-    "start": "node backend/api/server.js",
-    "install-deps": "npm install --prefix frontend && npm install --prefix backend",
     "dev:frontend": "npm --prefix frontend run dev",
     "dev:backend": "npm --prefix backend run dev"
+  },
+  "dependencies": {
+    "groq-sdk": "^1.2.0",
+    "nodemailer": "^9.0.5",
+    "zod": "^3.23.8"
   }
 }

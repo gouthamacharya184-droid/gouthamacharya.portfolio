@@ -1,17 +1,13 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Bot, Sparkles, Terminal, Zap, ArrowUp, Volume2, VolumeX, 
+import {
+  Bot, Sparkles, Terminal, ArrowUp,
   Trash2, Download, Cpu, ShieldCheck, Clock, WifiOff
 } from 'lucide-react';
 import Section from './Section';
-import { fadeUp, stagger } from '../utils/motion';
-import MarkdownRenderer from './markdown/MarkdownRenderer';
-import { checkChatStatus, checkBackendHealth } from '../utils/chatApi';
 import MessageBubble from './chat/MessageBubble';
 import { useChatContext } from '../hooks/useChat';
 import { formatTime } from '../utils/utils';
-import { getApiBaseUrl } from '../utils/api';
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 const MAX_MESSAGE_LENGTH = 5000;
@@ -30,49 +26,49 @@ const PROMPT_CASES = [
     type: 'Hallucination Detection',
     prompt: 'Compare these two LLM responses and identify any factual inconsistencies between them.',
     response: "Model A: 'The population of Paris is 2.1 million.'\nModel B: 'Paris has a population of 10.5 million people.'",
-    analysis: '\uD83D\uDEA8 Hallucination Detected: Model B refers to the metro area, while Model A refers to the city limits. Score: 8/10 inconsistency.',
+    analysis: '🚨 Hallucination Detected: Model B refers to the metro area, while Model A refers to the city limits. Score: 8/10 inconsistency.',
   },
   {
     type: 'Legal Analysis',
     prompt: 'What are the key implications of the new data privacy regulation for small businesses?',
     response: 'The regulation requires small businesses to appoint a DPO and perform DPIAs for processing...',
-    analysis: '\u2705 Verified: Matches Article 37 and 35. Prompt iteration improved context window recall.',
+    analysis: '✅ Verified: Matches Article 37 and 35. Prompt iteration improved context window recall.',
   },
 ];
 
-export default function AIChatSection({ apiBaseUrl }) {
-  const baseUrl = getApiBaseUrl(apiBaseUrl);
+export default function AIChatSection() {
+  // apiBaseUrl is intentionally not used here — ChatProvider (via context) owns
+  // the single baseUrl and polling loop, eliminating duplicate status checks.
   const scrollRef = useRef(null);
 
-  // ── Global Context ───────────────────────────────────────────────────────────
+  // ── Context ──────────────────────────────────────────────────────────────────
   const {
-    sessions,
-    activeSessionId,
-    activeSession,
     messages,
     isTyping,
+    aiStatus,       // Single source of truth — managed in ChatProvider
+    recheckStatus,
     telemetryLogs,
     addLog,
     handleClear,
     handleSend,
     activeArtifact,
-    setActiveArtifact
+    setActiveArtifact,
   } = useChatContext();
 
-  const [aiStatus, setAiStatus] = useState('checking');
   const [speakingMsgId, setSpeakingMsgId] = useState(null);
   const [inputText, setInputText] = useState('');
-  const [likedMap, setLikedMap] = useState({});
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const textareaRef = useRef(null);
 
   // ── Console State ────────────────────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState('monitor'); // monitor, prompt, cases
+  const [activeTab, setActiveTab] = useState('monitor');
   const [caseIdx, setCaseIdx] = useState(0);
 
   // ── Local Send Wrapper ───────────────────────────────────────────────────────
   const handleSendLocal = (text) => {
     const trimmed = text?.trim();
-    if (!trimmed || isTyping) return;
+    // Block sends when offline, checking, or already typing
+    if (!trimmed || isTyping || aiStatus !== 'online') return;
 
     const userCount = messages.filter(m => m.role === 'user').length;
     if (userCount >= MAX_SESSION_MESSAGES) {
@@ -84,48 +80,14 @@ export default function AIChatSection({ apiBaseUrl }) {
     setInputText('');
   };
 
-  // ── Scroll to bottom ─────────────────────────────────────────────────────────
+  // ── Scroll to bottom on new messages ────────────────────────────────────────
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
     }
   }, [messages, isTyping]);
 
-  // ── Status check — 2-phase: /health (90s cold-start) then /chat/status ──────
-  useEffect(() => {
-    let cancelled = false;
-
-    const check = async () => {
-      const status = await checkChatStatus(baseUrl);
-      if (!cancelled) {
-        setAiStatus(status);
-        const label = status === 'online' ? 'ONLINE' : status === 'waking' ? 'WAKING' : status === 'degraded' ? 'DEGRADED' : 'OFFLINE';
-        addLog('status', `Backend status: ${label}`);
-      }
-    };
-
-    // Initial check
-    check();
-
-    // Poll every 60s
-    const interval = setInterval(check, 60_000);
-
-    // ── Keep-alive ping every 14 min to prevent Render free-tier cold-start ────
-    // Render sleeps after 15 min of inactivity. Ping /api/health silently every
-    // 14 min so the server stays warm and users never see the "waking" state.
-    const keepAlive = setInterval(async () => {
-      if (!cancelled) await checkBackendHealth(baseUrl);
-    }, 14 * 60 * 1000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-      clearInterval(keepAlive);
-    };
-  }, [baseUrl, addLog]);
-
-
-  // ── TTS Text-to-Speech ───────────────────────────────────────────────────────
+  // ── TTS ──────────────────────────────────────────────────────────────────────
   const handleToggleSpeech = (msgId, text) => {
     if (speakingMsgId === msgId) {
       window.speechSynthesis?.cancel();
@@ -152,21 +114,23 @@ export default function AIChatSection({ apiBaseUrl }) {
       const role = m.role === 'user' ? 'User' : 'Portfolio AI';
       return `[${formatTime(m.timestamp)}] ${role}:\n${m.content}\n\n${'-'.repeat(40)}\n`;
     }).join('\n');
-    const blob = new Blob([`Goutham Acharya AI Chat Export\n${new Date().toLocaleDateString()}\n\n${content}`], { type: 'text/plain' });
+    const blob = new Blob(
+      [`Goutham Acharya AI Chat Export\n${new Date().toLocaleDateString()}\n\n${content}`],
+      { type: 'text/plain' }
+    );
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = `portfolio_chat_${Date.now()}.txt`;
-    document.body.appendChild(a); a.click();
-    document.body.removeChild(a); URL.revokeObjectURL(url);
+    a.href = url;
+    a.download = `portfolio_chat_${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
     addLog('system', 'Chat history exported successfully.');
   };
 
-  // canSend: allow when online OR degraded (backend alive, attempt anyway)
-  const canSend = inputText.trim().length > 0 && !isTyping && (aiStatus === 'online' || aiStatus === 'degraded');
-
-  // Hide section only when truly offline (server not reachable at all)
-  // Show it in all other states including waking/degraded
-  if (aiStatus === 'offline') return null;
+  // canSend: only when text present, not typing, AND AI is online
+  const canSend = inputText.trim().length > 0 && !isTyping && aiStatus === 'online';
 
   return (
     <Section
@@ -235,12 +199,12 @@ export default function AIChatSection({ apiBaseUrl }) {
                 >
                   {[...telemetryLogs].reverse().map((log, i) => {
                     const colors = {
-                      system: 'text-slate-500',
-                      status: 'text-amber-400/80',
-                      user: 'text-cyan-300',
+                      system:   'text-slate-500',
+                      status:   'text-amber-400/80',
+                      user:     'text-cyan-300',
                       security: 'text-violet-400',
-                      latency: 'text-emerald-400 font-bold',
-                      error: 'text-rose-400 font-bold'
+                      latency:  'text-emerald-400 font-bold',
+                      error:    'text-rose-400 font-bold',
                     };
                     return (
                       <div key={i} className="flex items-start gap-2 leading-relaxed">
@@ -336,28 +300,24 @@ export default function AIChatSection({ apiBaseUrl }) {
               <div>
                 <div className="flex items-center gap-1.5">
                   <h3 className="text-sm font-bold text-white tracking-tight">AI Assistant</h3>
-                  <Sparkles size={12} className="text-cyan-400 animate-pulse" />
+                  <Sparkles size={12} className="text-cyan-400" />
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className={`inline-block h-2 w-2 rounded-full transition-all duration-500 ${
-                    aiStatus === 'online'   ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)] animate-pulse' :
-                    aiStatus === 'waking'   ? 'bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.6)] animate-pulse' :
-                    aiStatus === 'degraded' ? 'bg-orange-400 shadow-[0_0_8px_rgba(251,146,60,0.6)] animate-pulse' :
-                    aiStatus === 'checking' ? 'bg-slate-400 animate-pulse' :
-                    'bg-rose-500'
+                  <span className={`inline-block h-2 w-2 rounded-full ${
+                    aiStatus === 'online'
+                      ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]'
+                      : aiStatus === 'offline'
+                        ? 'bg-rose-500'
+                        : 'bg-amber-400'
                   }`} />
                   <span className="text-[9px] uppercase tracking-wider font-bold text-slate-500">
-                    {aiStatus === 'online'   ? 'Connected' :
-                     aiStatus === 'waking'   ? 'Waking Up…' :
-                     aiStatus === 'degraded' ? 'AI Degraded' :
-                     aiStatus === 'checking' ? 'Checking…' :
-                     'Offline'}
+                    {aiStatus === 'online' ? 'Connected' : aiStatus === 'offline' ? 'Offline' : 'Connecting…'}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Quick Actions Header */}
+            {/* Quick Actions */}
             <div className="flex items-center gap-1">
               <button
                 onClick={handleClear}
@@ -378,8 +338,8 @@ export default function AIChatSection({ apiBaseUrl }) {
             </div>
           </div>
 
-          {/* Messages Log Canvas */}
-          <div 
+          {/* Messages Canvas */}
+          <div
             ref={scrollRef}
             className="flex-1 overflow-y-auto px-5 py-6 space-y-4 scroll-smooth custom-scrollbar select-text bg-[#030612]/30"
           >
@@ -395,30 +355,35 @@ export default function AIChatSection({ apiBaseUrl }) {
                 activeArtifact={activeArtifact}
               />
             ))}
-
-
           </div>
 
+          {/* Offline Warning Banner */}
+          {aiStatus === 'offline' && (
+            <div className="flex items-center justify-between px-5 py-2.5 bg-rose-500/10 border-t border-rose-500/20 flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <WifiOff size={13} className="text-rose-400 shrink-0" />
+                <span className="text-rose-400 text-[11px] font-medium">
+                  AI assistant is currently offline. Please check back later.
+                </span>
+              </div>
+              <button
+                onClick={recheckStatus}
+                className="px-2.5 py-1 text-[10px] font-bold text-rose-300 hover:text-white bg-rose-500/20 hover:bg-rose-500/40 border border-rose-500/30 rounded-lg transition-all cursor-pointer"
+              >
+                Retry Connection
+              </button>
+            </div>
+          )}
 
-          {/* Status Banners */}
-          {aiStatus === 'waking' && (
-            <div className="flex items-center gap-2 px-5 py-2.5 bg-amber-500/10 border-b border-amber-500/20 flex-shrink-0">
+          {/* Checking / Connecting Banner */}
+          {aiStatus === 'checking' && (
+            <div className="flex items-center gap-2 px-5 py-2 bg-amber-500/10 border-t border-amber-500/20 flex-shrink-0">
               <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
-              <span className="text-amber-400 text-[11px] font-medium">
-                Waking up the backend server — this takes ~30s on first load (Render free tier).
-              </span>
-            </div>
-          )}
-          {aiStatus === 'degraded' && (
-            <div className="flex items-center gap-2 px-5 py-2.5 bg-orange-500/10 border-b border-orange-500/20 flex-shrink-0">
-              <span className="inline-block h-1.5 w-1.5 rounded-full bg-orange-400 animate-pulse shrink-0" />
-              <span className="text-orange-400 text-[11px] font-medium">
-                Backend is running. AI service is degraded — GROQ_API_KEY may need updating on Render.
-              </span>
+              <span className="text-amber-400 text-[11px] font-medium">Connecting to AI service…</span>
             </div>
           )}
 
-          {/* Interactive Chat Input panel */}
+          {/* Input Area */}
           <div className="px-4 pb-4 pt-3 border-t border-white/10 bg-[#070b19]/90 relative z-10 shrink-0">
             <div
               className={`relative rounded-xl border transition-all duration-300 ${
@@ -429,8 +394,10 @@ export default function AIChatSection({ apiBaseUrl }) {
             >
               <div className="flex items-end gap-3 px-4 py-2">
                 <textarea
+                  ref={textareaRef}
                   rows={1}
                   value={inputText}
+                  disabled={aiStatus !== 'online'}
                   onChange={(e) => {
                     setInputText(e.target.value.slice(0, MAX_MESSAGE_LENGTH));
                     e.target.style.height = 'auto';
@@ -447,11 +414,17 @@ export default function AIChatSection({ apiBaseUrl }) {
                   }}
                   onFocus={() => setIsInputFocused(true)}
                   onBlur={() => setIsInputFocused(false)}
-                  placeholder="Ask about Goutham's experience, background..."
+                  placeholder={
+                    aiStatus === 'offline'
+                      ? 'AI offline — please try again later'
+                      : aiStatus === 'checking'
+                        ? 'Connecting to AI…'
+                        : "Ask about Goutham's experience, background…"
+                  }
                   aria-label="Chat query text input"
                   autoComplete="off"
                   spellCheck="true"
-                  className="flex-1 bg-transparent text-[13.5px] text-white placeholder:text-slate-600 resize-none outline-none border-none focus:ring-0 focus:outline-none leading-relaxed py-1.5"
+                  className="flex-1 bg-transparent text-[13.5px] text-white placeholder:text-slate-600 resize-none outline-none border-none focus:ring-0 focus:outline-none leading-relaxed py-1.5 disabled:cursor-not-allowed"
                   style={{ minHeight: 24, maxHeight: 120, overflowY: 'auto' }}
                 />
 
@@ -459,9 +432,7 @@ export default function AIChatSection({ apiBaseUrl }) {
                   <button
                     onClick={() => {
                       handleSendLocal(inputText);
-                      // Reset height
-                      const tx = document.querySelector('textarea[aria-label="Chat query text input"]');
-                      if (tx) tx.style.height = 'auto';
+                      if (textareaRef.current) textareaRef.current.style.height = 'auto';
                     }}
                     disabled={!canSend}
                     aria-label="Send message query"

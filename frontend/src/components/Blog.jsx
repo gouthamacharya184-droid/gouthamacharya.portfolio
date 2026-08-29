@@ -23,8 +23,8 @@ export default function Blog() {
     );
   }
 
-  const topics      = portfolio?.blogTopics ?? [];
-  const githubUrl   = portfolio?.profile?.github ?? "https://github.com";
+  const topics = portfolio?.blogTopics ?? [];
+  const githubUrl = portfolio?.profile?.github ?? "https://github.com";
 
   return (
     <Section
@@ -44,7 +44,7 @@ export default function Blog() {
           <motion.article
             key={article.title}
             variants={fadeUp}
-            className="group relative flex flex-col rounded-2xl border border-white/8 bg-white/[0.03] p-6 hover:bg-white/[0.06] hover:border-cyan-400/20 transition-all duration-300 hover:shadow-[0_0_30px_rgba(34,211,238,0.07)]"
+            className="group relative flex flex-col rounded-2xl border border-white/10 bg-white/[0.03] p-6 hover:bg-white/[0.06] hover:border-cyan-400/20 transition-colors duration-300 hover:shadow-[0_0_30px_rgba(34,211,238,0.07)]"
           >
             <div className={`inline-flex items-center gap-1.5 self-start rounded-full border ${article.statusBorder} ${article.statusBg} px-2.5 py-1 mb-4`}>
               <PenLine size={11} className={article.statusColor} />

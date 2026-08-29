@@ -1,16 +1,11 @@
 /**
  * api.js — Centralized API base URL resolver and endpoint helpers
  *
- * Rules:
- *  - In local development (import.meta.env.DEV):
- *      Default to "" so Vite's dev proxy forwards /api/* to http://127.0.0.1:8787
- *      If VITE_API_BASE_URL is explicitly set, respect that override.
- *  - In production (import.meta.env.PROD):
- *      Use VITE_API_BASE_URL if defined, otherwise fall back to the known deployed Render backend
- *      ('https://goutham-portfolio-backend.onrender.com').
+ * Full-Stack Vercel Deployment:
+ *  - Both frontend and serverless API (/api/*) are hosted on the same Vercel domain.
+ *  - Defaults to "" so all requests use native relative paths (/api/...).
+ *  - If VITE_API_BASE_URL is explicitly set, respects that override.
  */
-
-export const RENDER_BACKEND_URL = 'https://goutham-portfolio-backend.onrender.com';
 
 export function getApiBaseUrl(overrideUrl = '') {
   if (overrideUrl && typeof overrideUrl === 'string' && overrideUrl.trim() !== '') {
@@ -22,11 +17,7 @@ export function getApiBaseUrl(overrideUrl = '') {
     return envUrl.replace(/\/$/, '');
   }
 
-  if (import.meta.env.DEV) {
-    return '';
-  }
-
-  return RENDER_BACKEND_URL;
+  return '';
 }
 
 export function apiUrl(path = '', overrideBase = '') {

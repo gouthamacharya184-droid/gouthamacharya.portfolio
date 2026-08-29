@@ -45,7 +45,7 @@ export default function ProgressiveImage({
           src={src}
           alt={alt}
           loading="eager"
-          fetchpriority="high"
+          fetchPriority="high"
           decoding="sync"
           className="w-full h-full object-cover"
           onError={() => setHasError(true)}
@@ -60,7 +60,7 @@ export default function ProgressiveImage({
       {/* Skeleton shown until image loads */}
       <div
         className={`absolute inset-0 bg-slate-800/50 transition-opacity duration-500 z-0 ${
-          isLoaded ? "opacity-0 pointer-events-none" : "opacity-100 animate-pulse"
+          isLoaded ? "opacity-0 pointer-events-none" : "opacity-100"
         }`}
         aria-hidden="true"
       />

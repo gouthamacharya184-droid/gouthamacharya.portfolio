@@ -1,129 +1,93 @@
-# Goutham Acharya Portfolio
+# Goutham Acharya Portfolio — Full-Stack (Vercel)
 
-A cinematic React + Tailwind + Framer Motion portfolio with an Express + Nodemailer backend for secure contact submissions.
+A modern full-stack React + Tailwind CSS portfolio featuring an integrated AI Chatbot powered by **Grok / xAI API** and Vercel Serverless Functions.
 
-## Stack
+---
 
-- Frontend: React, Vite, Tailwind CSS, Framer Motion
-- Backend: Node.js, Express, Nodemailer, Zod, Helmet
-- Deploy-ready for Vercel/Netlify frontend plus Render/Railway/VPS backend
-
-## Features
-
-- Cinematic hero and section animations
-- Resume-driven content structure
-- Responsive layout with mobile navigation
-- Dark/light theme toggle
-- Project cards, skill bars, timeline sections
-- Secure contact form with backend validation
-- Email delivery to Gmail with confirmation email to sender
-- WhatsApp redirect handled by backend to avoid exposing the number in frontend source
-- CV download support
-
-## Project Structure
+## Architecture
 
 ```text
-goutham-portfolio/
-├── frontend/
-├── backend/
-└── README.md
+                      USER
+                        │
+                        ▼
+               ┌─────────────────┐
+               │     VERCEL      │
+               │                 │
+               │   React + Vite  │
+               │     Frontend    │
+               │        +        │
+               │   Serverless    │
+               │   API (/api/*)  │
+               └────────┬────────┘
+                        │
+                        ▼
+               ┌─────────────────┐
+               │   GROK / xAI    │
+               │      API        │
+               └─────────────────┘
 ```
 
-## Local Setup
+- **Frontend**: React, Vite, Tailwind CSS, Framer Motion
+- **Backend / Serverless**: Vercel Serverless Functions (`/api/*`), Node.js, Zod, Nodemailer
+- **AI Engine**: Grok / xAI API (`https://api.x.ai/v1`) using `XAI_API_KEY` (with fallback `GROQ_API_KEY`)
+- **Hosting**: Unified full-stack deployment on **Vercel** (zero third-party backend servers required)
 
-### 1) Install dependencies
+---
+
+## Vercel Serverless API Endpoints
+
+- `POST /api/chat` — Streaming AI chatbot completions (xAI Grok / Groq)
+- `GET /api/chat/status` — Live AI model health check & status
+- `GET /api/portfolio` — Dynamic portfolio JSON with ETag caching
+- `GET /api/portfolio/config` — Public configuration details
+- `GET /api/portfolio/resume` — Resume PDF stream
+- `POST /api/contact` — Secure contact form with Zod validation & Nodemailer
+- `GET /api/social/whatsapp` — Redirect to WhatsApp
+- `GET /api/social/call` — Redirect to phone call
+- `GET /api/social/github` — Redirect to GitHub profile
+- `GET /api/health` — API health check
+
+---
+
+## Environment Variables (Vercel Dashboard)
+
+Set these in **Vercel Dashboard → Project Settings → Environment Variables**:
+
+| Variable | Description | Required | Environment |
+| :--- | :--- | :--- | :--- |
+| `XAI_API_KEY` | Grok / xAI API Key from [console.x.ai](https://console.x.ai/) | **Yes (for Grok AI)** | Production, Preview, Development |
+| `GROQ_API_KEY` | Alternative / Fallback AI Key from [console.groq.com](https://console.groq.com/) | Optional fallback | Production, Preview, Development |
+| `SMTP_HOST` | SMTP Server (e.g. `smtp.gmail.com`) | Optional | Production, Preview |
+| `SMTP_PORT` | SMTP Port (`465` or `587`) | Optional | Production, Preview |
+| `SMTP_USER` | SMTP Username / Email | Optional | Production, Preview |
+| `SMTP_PASS` | Gmail App Password | Optional | Production, Preview |
+| `RECIPIENT_EMAIL` | Destination email for contact messages | Optional | Production, Preview |
+
+> **Security Note**: All secret keys (`XAI_API_KEY`, `GROQ_API_KEY`, `SMTP_PASS`) are accessed **only** on the server side in serverless functions and are **never exposed to the browser**.
+
+---
+
+## Local Development
 
 ```bash
-cd frontend && npm install
-cd ../backend && npm install
+# 1. Install root & frontend dependencies
+npm install
+
+# 2. Start frontend dev server
+npm run dev:frontend
+
+# 3. Build for production
+npm run build
 ```
 
-### 2) Configure environment variables
+---
 
-Copy the examples and fill in real values.
+## Deployment to Vercel
 
 ```bash
-cd frontend
-cp .env.example .env
+# Deploy preview
+vercel
 
-cd ../backend
-cp .env.example .env
+# Deploy production
+vercel --prod
 ```
-
-### 3) Gmail setup
-
-Use a Gmail App Password, not your normal Gmail password.
-
-- Enable 2-Step Verification on Gmail
-- Create an App Password
-- Put that app password into `SMTP_PASS`
-
-### 4) Start the backend
-
-```bash
-cd backend
-npm run dev
-```
-
-### 5) Start the frontend
-
-```bash
-cd frontend
-npm run dev
-```
-
-The frontend runs at `http://localhost:5173` and the backend runs at `http://localhost:8787`.
-
-## Deploy Notes
-
-### Frontend
-
-Set:
-
-```env
-VITE_API_BASE_URL=https://your-backend-domain.com
-```
-
-Deploy `frontend/` to Vercel or Netlify.
-
-### Backend
-
-Deploy `backend/` to Render, Railway, Fly.io, or a Node server.
-
-Set these environment variables on the backend host:
-
-```env
-PORT=8787
-FRONTEND_URL=https://your-frontend-domain.com
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=your-gmail@gmail.com
-SMTP_PASS=your-gmail-app-password
-RECIPIENT_EMAIL=your-gmail@gmail.com
-WHATSAPP_NUMBER=911234567890
-GITHUB_URL=https://github.com/gouthamacharya184-droid
-```
-
-## Security Notes
-
-- Email credentials, owner email, and WhatsApp number are stored only in backend environment variables.
-- The frontend uses a backend route for WhatsApp redirect.
-- The contact route validates input and applies rate limiting.
-- Public GitHub URLs remain public by design.
-
-## Important Limitation
-
-No web app can completely hide the existence of the backend route it calls. This build keeps secrets off the frontend and out of the DOM, which is the realistic security boundary for browser-based applications.
-
-## Resume / Assets
-
-- Profile image: included in `frontend/public/profile.png`
-- Resume download: included in `frontend/public/resume.pdf`
-
-## Optional Improvements
-
-- Add real project screenshots and live demo links
-- Add backend logging or captcha
-- Add unit and integration tests
-- Add analytics and SEO enhancements

@@ -1,17 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-function requireEnv(key) {
-  const value = process.env[key];
-  if (!value || value.trim() === "") {
-    throw new Error(
-      `[config] Missing required environment variable: ${key}\n` +
-      `  → Copy backend/.env.example to backend/.env and fill in the value.`
-    );
-  }
-  return value.trim();
-}
-
 function optionalEnv(key, fallback = "") {
   return (process.env[key] || fallback).trim();
 }

@@ -5,6 +5,10 @@ export const whatsappRedirect = (_req, res) => {
   res.redirect(302, url);
 };
 
+export const callRedirect = (_req, res) => {
+  res.redirect(302, `tel:${config.whatsappNumber}`);
+};
+
 export const githubRedirect = (_req, res) => {
   res.redirect(302, config.githubUrl);
 };

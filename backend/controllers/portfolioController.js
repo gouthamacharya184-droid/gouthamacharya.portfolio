@@ -46,7 +46,6 @@ export const getPortfolioConfig = (req, res) => {
 
 export const downloadResume = (req, res) => {
   const possiblePaths = [
-    path.join(__dirname, "../uploads/projects/Goutham_Acharya_Resume.pdf"),
     path.join(__dirname, "../uploads/Goutham_Acharya_Resume.pdf"),
     path.join(__dirname, "../uploads/resume.pdf"),
   ];
