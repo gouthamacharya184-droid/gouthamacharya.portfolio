@@ -114,7 +114,7 @@ export const portfolioData = {
         "Structured modular Node.js/Express REST backend for dynamic portfolio API data",
         "Optimized asset loading, smooth animations, and secure production deployment",
       ],
-      links: { github: "https://github.com/gouthamacharya184-droid", demo: "https://gouthamacharya.vercel.app/" },
+      links: { github: "https://github.com/gouthamacharya184-droid/gouthamacharya.portfolio", demo: "https://gouthamacharya.vercel.app/" },
     },
     {
       title:       "LLM Hallucination Detection",
