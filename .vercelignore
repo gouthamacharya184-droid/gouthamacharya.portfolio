@@ -1,26 +1,4 @@
-# .vercelignore — Exclude files/directories from Vercel deployment
-#
-# Vercel needs to see:
-#   - vercel.json (root config)
-#   - package.json + package-lock.json (root, for API function deps)
-#   - api/ (serverless functions)
-#   - frontend/ (built by buildCommand: npm --prefix frontend install && npm --prefix frontend run build)
-#
-# CRITICAL EXCLUSION:
-#   backend/ must be excluded — it contains backend/api/server.js which Vercel's
-#   function detector misidentifies as a serverless function, causing
-#   "Deploying outputs" failure due to invalid Express server bundling.
-
-# ── Backend Express server (runs separately, NOT a Vercel function) ──────────
+# .vercelignore — Exclude non-production directories from Vercel deployment
 backend/
-
-# ── Development/build artifacts ──────────────────────────────────────────────
-node_modules/
-.git/
-.vscode/
-
-# ── Secrets ──────────────────────────────────────────────────────────────────
-.env
-.env.local
-.env.development
-.env.production
+frontend/
+*.log
