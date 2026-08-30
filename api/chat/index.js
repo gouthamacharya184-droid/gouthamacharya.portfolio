@@ -1,6 +1,6 @@
 import Groq from "groq-sdk";
-import { chatSchema, sanitizeChatMessage } from "./_lib/validation.js";
-import { SYSTEM_PROMPT } from "./_lib/systemPrompt.js";
+import { chatSchema, sanitizeChatMessage } from "../_lib/validation.js";
+import { SYSTEM_PROMPT } from "../_lib/systemPrompt.js";
 
 const XAI_API_URL = "https://api.x.ai/v1/chat/completions";
 const XAI_MODELS = ["grok-2-latest", "grok-beta", "grok-2"];
