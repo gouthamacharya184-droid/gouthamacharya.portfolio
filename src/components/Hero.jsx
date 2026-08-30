@@ -173,7 +173,7 @@ export default function Hero({ apiBaseUrl = "" }) {
               {/* Profile Image container without background frame */}
               <div className="relative">
                 <ProgressiveImage
-                  src={getAssetUrl("/api/assets/profile.webp")}
+                  src={getAssetUrl("/profile.webp")}
                   alt="Goutham Acharya profile photo"
                   loading="eager"
                   className="w-full h-auto max-h-[340px] xs:max-h-[410px] sm:max-h-[480px] md:max-h-[550px] lg:max-h-[530px] object-cover object-top"
@@ -259,7 +259,7 @@ export default function Hero({ apiBaseUrl = "" }) {
                 View My Work <ArrowDown size={15} strokeWidth={2.5} />
               </a>
               <a
-                href={`${backendUrl}/api/uploads/resume.pdf`}
+                href={getAssetUrl(profile?.resumeUrl || "/Goutham_Acharya_Resume.pdf")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 backdrop-blur-md px-5 xs:px-6 py-3 xs:py-3.5 text-sm font-semibold text-slate-200 hover:bg-white/10 hover:border-cyan-400/35 hover:text-cyan-300 hover:shadow-[0_0_20px_rgba(34,211,238,0.15)] transition-all duration-200 min-h-[48px] w-full sm:w-auto"
