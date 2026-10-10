@@ -45,7 +45,7 @@ export default function ProgressiveImage({
           src={src}
           alt={alt}
           loading="eager"
-          fetchPriority="high"
+          fetchpriority="high"
           decoding="sync"
           className="w-full h-full object-cover"
           onError={() => setHasError(true)}

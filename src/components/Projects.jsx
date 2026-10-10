@@ -76,9 +76,9 @@ export default function Projects() {
   return (
     <Section
       id="projects"
-      eyebrow="Projects"
-      title="Selected builds around analysis, reliability, and AI workflows."
-      description="Each project highlights structured thinking, experimentation, and applied problem solving."
+      eyebrow={portfolio?.sections?.projects?.eyebrow ?? "Projects"}
+      title={portfolio?.sections?.projects?.title ?? "Selected builds around analysis, reliability, and AI workflows."}
+      description={portfolio?.sections?.projects?.description ?? "Each project highlights structured thinking, experimentation, and applied problem solving."}
     >
       {/* All 3 projects in equal 3-col grid */}
       <motion.div variants={stagger} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }} className="grid gap-5 xs:gap-6 sm:gap-8 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">

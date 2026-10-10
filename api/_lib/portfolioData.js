@@ -14,10 +14,34 @@ export const portfolioData = {
     location:  "Udupi, Karnataka, India",
     phone:     "7619573468",
     displayEmail: "gouthamacharya184@gmail.com",
+    heroBadge: "Available for internships",
+    typewriterWords: [
+      "Python Developer",
+      "AI Engineer",
+      "LLM Developer",
+      "Automation Engineer",
+      "RAG Application Builder",
+    ],
+    heroBio:
+      "AI Engineer specializing in Python, Large Language Models (LLMs), RAG pipelines, FastAPI, and NLP. I design and develop scalable, production-ready AI systems that transform complex data into intelligent, reliable, and real-world solutions.",
+    heroBioParts: {
+      intro: "AI Engineer specializing in",
+      highlight1: "Python, Large Language Models (LLMs), RAG pipelines, FastAPI, and NLP",
+      middle: "I design and develop scalable, production-ready AI systems that transform complex data into",
+      highlight2: "intelligent, reliable, and real-world solutions.",
+    },
     summary:
       "Motivated Artificial Intelligence and Machine Learning (AIML) student with strong foundations in Python, APIs, Generative AI, and workflow automation. Passionate about building AI-powered applications, AI agents, and intelligent automation solutions using Large Language Models (LLMs). Experienced in developing real-world AI projects and integrating modern technologies to solve business problems.",
     objective:
       "Seeking an Automation Developer Intern role to contribute technical skills, learn enterprise automation practices, and deliver impactful AI-driven solutions.",
+    bioParagraph1:
+      "I am an Artificial Intelligence and Machine Learning engineer specializing in building practical, data-driven systems.",
+    bioParagraph2:
+      "My focus is on designing production-grade AI applications that bridge the gap between experimental models and robust deployment.",
+    connectPitch:
+      "I'm open to internship opportunities, project collaboration, and conversations around practical AI, NLP, LLM quality, and workflow automation.",
+    footerTagline:
+      "Crafting intelligent experiences at the intersection of AI & Machine Learning.",
     github:       "https://github.com/gouthamacharya184-droid",
     portfolioUrl: "https://gouthamacharya.vercel.app/",
     resumeUrl:    "/api/portfolio/resume",
@@ -114,6 +138,8 @@ export const portfolioData = {
         "Structured modular Node.js/Express REST backend for dynamic portfolio API data",
         "Optimized asset loading, smooth animations, and secure production deployment",
       ],
+      impact:
+        "This project demonstrates a structured approach to problem-solving in the AI domain, focusing on data reliability and high-quality model outputs.",
       links: { github: "https://github.com/gouthamacharya184-droid/gouthamacharya.portfolio", demo: "https://gouthamacharya.vercel.app/" },
     },
     {
@@ -127,6 +153,8 @@ export const portfolioData = {
         "Implemented RAG with Brave Search live web retrieval for factual verification",
         "Measured hallucination rates and accuracy scoring metrics across models",
       ],
+      impact:
+        "This project demonstrates a structured approach to problem-solving in the AI domain, focusing on data reliability and high-quality model outputs.",
       links: { github: "https://github.com/gouthamacharya184-droid" },
     },
     {
@@ -140,6 +168,8 @@ export const portfolioData = {
         "Engineered legal-domain prompts for simple, accessible explanations",
         "Assisted users in navigating legal documents, terms, and procedures",
       ],
+      impact:
+        "This project demonstrates a structured approach to problem-solving in the AI domain, focusing on data reliability and high-quality model outputs.",
       links: { github: "https://github.com/gouthamacharya184-droid" },
     },
     {
@@ -153,6 +183,8 @@ export const portfolioData = {
         "Performed exploratory data analysis to extract hidden patterns",
         "Designed clear visual summaries and insight-driven charts with Matplotlib",
       ],
+      impact:
+        "This project demonstrates a structured approach to problem-solving in the AI domain, focusing on data reliability and high-quality model outputs.",
       links: { github: "https://github.com/gouthamacharya184-droid" },
     },
   ],
@@ -325,4 +357,85 @@ export const portfolioData = {
       icon:  "Instagram",
     },
   ],
+
+  sections: {
+    about: {
+      eyebrow: "About",
+      title: "A concise story with a strong AI direction.",
+      description: "Seeking an Automation Developer Intern role to contribute technical skills, learn enterprise automation practices, and deliver impactful AI-driven solutions.",
+      certificationsLabel: "Certifications",
+    },
+    timeline: {
+      eyebrow: "Experience & Education",
+      title: "A learning path grounded in practical AI work.",
+      description: "Built from resume milestones, academic direction, and portfolio projects.",
+      experienceHeader: "Experience",
+      educationHeader: "Education",
+    },
+    projects: {
+      eyebrow: "Projects",
+      title: "Selected builds around analysis, reliability, and AI workflows.",
+      description: "Each project highlights structured thinking, experimentation, and applied problem solving.",
+    },
+    skills: {
+      eyebrow: "Skills",
+      title: "Tools and technologies I work with.",
+      description: "A focused set of capabilities around Python, data, and AI/ML systems.",
+    },
+    testimonials: {
+      eyebrow: "Certifications & Achievements",
+      title: "Credentials that back the work.",
+      description: "Verified certifications and milestones earned through continuous self-study and hands-on project building.",
+      badge: "Certified",
+    },
+    blog: {
+      eyebrow: "Writing & Thoughts",
+      title: "Ideas I'm developing into articles.",
+      description: "Topics I'm actively researching and writing about — rooted in real experiments, not theory.",
+      notice: "Articles will be published on Medium / Dev.to — stay tuned!",
+      githubPrompt: "Follow my GitHub for project updates",
+    },
+    contact: {
+      eyebrow: "Contact",
+      title: "Let's build something valuable together.",
+      description: "For opportunities, collaborations, and AI-focused conversations.",
+      cardSubtitle: "Connect",
+      connectPitch: "I'm open to internship opportunities, project collaboration, and conversations around practical AI, NLP, LLM quality, and workflow automation.",
+      securityNotice: "Sensitive contact data stays on the backend. The form posts to a secured API, validates input, and forwards the message through email transport configured in environment variables.",
+    },
+    stats: {
+      eyebrow: "By the Numbers",
+      title: "Quantifying the journey.",
+      description: "A quick glance at the metrics behind the late-night coding sessions and model training runs.",
+    },
+  },
+
+  chatbotConfig: {
+    welcomeGreeting: "Hi! I'm Goutham's AI assistant 👋\n\nI can answer anything about his work, skills, projects, or background!",
+    emptyStateTitle: "Ask Goutham's AI Assistant",
+    emptyStateDescription: "I'm trained on Goutham's background to help you learn about his skills, projects, and goals. Choose a topic below or type anything!",
+    suggestions: [
+      {
+        icon: "HelpCircle",
+        label: "Background",
+        text: "Tell me about Goutham's AI engineering background.",
+      },
+      {
+        icon: "Code",
+        label: "Skills",
+        text: "What tools and frameworks is he expert in?",
+      },
+      {
+        icon: "Briefcase",
+        label: "Projects",
+        text: "Show me his top AI / RAG projects.",
+      },
+      {
+        icon: "FileText",
+        label: "Contact",
+        text: "How can I contact Goutham or view his resume?",
+      },
+    ],
+  },
 };
+

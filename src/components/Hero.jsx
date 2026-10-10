@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import ProgressiveImage from "./ProgressiveImage";
 import { usePortfolio } from "../hooks/usePortfolio";
 
-const typewriterWords = [
+const FALLBACK_TYPEWRITER_WORDS = [
   "Python Developer",
   "AI Engineer",
   "LLM Developer",
@@ -137,7 +137,8 @@ function useTypewriter(words) {
 export default function Hero({ apiBaseUrl = "" }) {
   const { portfolio, getAssetUrl, apiBaseUrl: contextApiBaseUrl } = usePortfolio();
   const profile = portfolio?.profile ?? { name: "Goutham Acharya", location: "", github: "#" };
-  const currentText = useTypewriter(typewriterWords);
+  const words = profile?.typewriterWords ?? FALLBACK_TYPEWRITER_WORDS;
+  const currentText = useTypewriter(words);
   const backendUrl = (apiBaseUrl || contextApiBaseUrl || "").replace(/\/$/, "");
 
   return (
@@ -202,7 +203,7 @@ export default function Hero({ apiBaseUrl = "" }) {
                 <Sparkles size={11} />
               </div>
               <span className="text-cyan-200 tracking-[0.12em] text-[9px] xs:text-[10px] sm:text-[11px] uppercase font-semibold">
-                Available for internships
+                {profile.heroBadge ?? "Available for internships"}
               </span>
             </motion.div>
 
@@ -239,10 +240,21 @@ export default function Hero({ apiBaseUrl = "" }) {
               className="text-slate-300 leading-relaxed max-w-[90%] xs:max-w-xl mb-6 xs:mb-7 sm:mb-8 font-light"
               style={{ fontSize: "var(--text-body-lg)" }}
             >
-              AI Engineer specializing in{" "}
-              <span className="font-semibold text-white">Python, Large Language Models (LLMs), RAG pipelines, FastAPI, and NLP</span>.{" "}
-              I design and develop scalable, production-ready AI systems that transform complex data into{" "}
-              <span className="text-cyan-400 font-semibold">intelligent, reliable, and real-world solutions.</span>
+              {profile?.heroBioParts ? (
+                <>
+                  {profile.heroBioParts.intro}{" "}
+                  <span className="font-semibold text-white">{profile.heroBioParts.highlight1}</span>.{" "}
+                  {profile.heroBioParts.middle}{" "}
+                  <span className="text-cyan-400 font-semibold">{profile.heroBioParts.highlight2}</span>
+                </>
+              ) : (
+                <>
+                  AI Engineer specializing in{" "}
+                  <span className="font-semibold text-white">Python, Large Language Models (LLMs), RAG pipelines, FastAPI, and NLP</span>.{" "}
+                  I design and develop scalable, production-ready AI systems that transform complex data into{" "}
+                  <span className="text-cyan-400 font-semibold">intelligent, reliable, and real-world solutions.</span>
+                </>
+              )}
             </motion.p>
 
             {/* Primary CTA buttons — stacked on mobile, row on sm+ */}

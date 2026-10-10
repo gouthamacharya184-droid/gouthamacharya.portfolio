@@ -52,6 +52,24 @@ function InteractiveCard({ title, text, icon: Icon }) {
 export default function About() {
   const { portfolio, loading, error } = usePortfolio();
 
+  // Defensive destructure with fallbacks — prevents crashes if API omits any arrays or while loading
+  const {
+    profile = {},
+    highlights = [],
+    strengthCards = [],
+    certifications = [],
+  } = portfolio || {};
+
+  // Memoize icon resolution — unconditionally called at top level according to React Rules of Hooks
+  const resolvedHighlights = useMemo(
+    () => highlights.map((h) => ({ ...h, IconComponent: resolveIcon(h.icon) })),
+    [highlights]
+  );
+  const resolvedStrengthCards = useMemo(
+    () => strengthCards.map((c) => ({ ...c, icon: resolveIcon(c.icon) })),
+    [strengthCards]
+  );
+
   if (loading) {
     return (
       <Section id="about" eyebrow="About" title="A concise story with a strong AI direction." description="">
@@ -67,30 +85,12 @@ export default function About() {
     );
   }
 
-  // Defensive destructure with fallbacks — prevents crashes if API omits any arrays
-  const {
-    profile,
-    highlights = [],
-    strengthCards = [],
-    certifications = [],
-  } = portfolio;
-
-  // Memoize icon resolution — avoids re-computing on every render
-  const resolvedHighlights = useMemo(
-    () => highlights.map((h) => ({ ...h, IconComponent: resolveIcon(h.icon) })),
-    [highlights]
-  );
-  const resolvedStrengthCards = useMemo(
-    () => strengthCards.map((c) => ({ ...c, icon: resolveIcon(c.icon) })),
-    [strengthCards]
-  );
-
   return (
     <Section
       id="about"
-      eyebrow="About"
-      title="A concise story with a strong AI direction."
-      description={profile.objective}
+      eyebrow={portfolio?.sections?.about?.eyebrow ?? "About"}
+      title={portfolio?.sections?.about?.title ?? "A concise story with a strong AI direction."}
+      description={portfolio?.sections?.about?.description ?? profile.objective}
     >
       {/* Dynamic Key metrics */}
       <motion.div
@@ -138,7 +138,9 @@ export default function About() {
 
           {/* Certifications */}
           <div className="relative z-10 mt-8 xs:mt-10">
-            <p className="text-[10px] xs:text-xs uppercase tracking-[0.3em] text-slate-500 mb-4">Certifications</p>
+            <p className="text-[10px] xs:text-xs uppercase tracking-[0.3em] text-slate-500 mb-4">
+              {portfolio?.sections?.about?.certificationsLabel ?? "Certifications"}
+            </p>
             <div className="flex flex-wrap gap-2 xs:gap-3">
               {certifications.map((item) => (
                 <span

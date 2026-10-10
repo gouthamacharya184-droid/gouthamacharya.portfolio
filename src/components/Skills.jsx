@@ -45,9 +45,9 @@ export default function Skills() {
   return (
     <Section
       id="skills"
-      eyebrow="Skills"
-      title="Tools and technologies I work with."
-      description="A focused set of capabilities around Python, data, and AI/ML systems."
+      eyebrow={portfolio?.sections?.skills?.eyebrow ?? "Skills"}
+      title={portfolio?.sections?.skills?.title ?? "Tools and technologies I work with."}
+      description={portfolio?.sections?.skills?.description ?? "A focused set of capabilities around Python, data, and AI/ML systems."}
     >
       {/* Tab scroller */}
       <div className="relative mb-6">

@@ -29,9 +29,9 @@ export default function Testimonials() {
   return (
     <Section
       id="testimonials"
-      eyebrow="Certifications & Achievements"
-      title="Credentials that back the work."
-      description="Verified certifications and milestones earned through continuous self-study and hands-on project building."
+      eyebrow={portfolio?.sections?.testimonials?.eyebrow ?? "Certifications & Achievements"}
+      title={portfolio?.sections?.testimonials?.title ?? "Credentials that back the work."}
+      description={portfolio?.sections?.testimonials?.description ?? "Verified certifications and milestones earned through continuous self-study and hands-on project building."}
     >
       {/* Certifications grid */}
       <motion.div
@@ -57,7 +57,7 @@ export default function Testimonials() {
                   </div>
                 ) : <div />}
                 <span className={`text-[9px] uppercase tracking-widest font-bold px-2.5 py-1 rounded-full ${cert.bg} ${cert.color} border ${cert.border} shrink-0`}>
-                  Certified
+                  {portfolio?.sections?.testimonials?.badge ?? "Certified"}
                 </span>
               </div>
 

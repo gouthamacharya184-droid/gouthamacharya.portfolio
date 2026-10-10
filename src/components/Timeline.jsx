@@ -19,9 +19,9 @@ export default function Timeline() {
   return (
     <Section
       id="experience"
-      eyebrow="Experience & Education"
-      title="A learning path grounded in practical AI work."
-      description="Built from resume milestones, academic direction, and portfolio projects."
+      eyebrow={portfolio?.sections?.timeline?.eyebrow ?? "Experience & Education"}
+      title={portfolio?.sections?.timeline?.title ?? "A learning path grounded in practical AI work."}
+      description={portfolio?.sections?.timeline?.description ?? "Built from resume milestones, academic direction, and portfolio projects."}
     >
       <div className="grid gap-8 lg:gap-10 lg:grid-cols-2">
 
@@ -29,7 +29,9 @@ export default function Timeline() {
         <div className="rounded-2xl xs:rounded-[2rem] border border-white/8 bg-gradient-to-br from-white/[0.05] to-transparent p-4 xxs:p-5 xs:p-8 sm:p-10 backdrop-blur-sm relative overflow-hidden">
           <div className="absolute -top-20 -left-20 h-56 w-56 rounded-full bg-cyan-500/5 blur-3xl pointer-events-none" />
 
-          <p className="text-[10px] xs:text-xs uppercase tracking-[0.3em] text-slate-500 mb-8 xs:mb-10">Experience</p>
+          <p className="text-[10px] xs:text-xs uppercase tracking-[0.3em] text-slate-500 mb-8 xs:mb-10">
+            {portfolio?.sections?.timeline?.experienceHeader ?? "Experience"}
+          </p>
 
           <div className="relative space-y-8 xs:space-y-10 pl-6 xxs:pl-7 xs:pl-10">
             {/* Static line */}
@@ -77,7 +79,9 @@ export default function Timeline() {
         <div className="rounded-2xl xs:rounded-[2rem] border border-white/8 bg-gradient-to-bl from-white/[0.05] to-transparent p-4 xxs:p-5 xs:p-8 sm:p-10 backdrop-blur-sm relative overflow-hidden">
           <div className="absolute -bottom-20 -right-20 h-56 w-56 rounded-full bg-violet-500/5 blur-3xl pointer-events-none" />
 
-          <p className="text-[10px] xs:text-xs uppercase tracking-[0.3em] text-slate-500 mb-8 xs:mb-10">Education</p>
+          <p className="text-[10px] xs:text-xs uppercase tracking-[0.3em] text-slate-500 mb-8 xs:mb-10">
+            {portfolio?.sections?.timeline?.educationHeader ?? "Education"}
+          </p>
 
           <div className="space-y-5 relative z-10">
             {resolvedEducation.map(({ period, title, institution, IconComponent }, index) => (
