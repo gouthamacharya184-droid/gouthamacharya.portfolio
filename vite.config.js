@@ -1,12 +1,17 @@
 /**
  * vite.config.js — Vite development server configuration
  *
- * Security notes:
+ * Architecture: Vercel Full-Stack (Serverless)
+ *  - Frontend: React + Vite (src/, index.html, public/)
+ *  - Backend:  Vercel Serverless Functions (api/)
+ *  - Hosting:  Vercel only — NO Render, NO Express server
+ *
+ * Dev notes:
  *  - `allowedHosts` is read from VITE_ALLOWED_HOST env var (not hardcoded).
- *    This prevents committing a specific ngrok domain that may change.
- *    Set it in frontend/.env.local for local dev if you use ngrok.
- *  - `proxy` rewrites all /api/* requests to the backend during dev,
- *    so the frontend never needs to know the backend origin at runtime.
+ *    Set it in .env.local for local dev if you use ngrok or mobile testing.
+ *  - During local dev, run `vercel dev` (port 3000) in one terminal and
+ *    `npm run dev` (port 5173) in another. The Vite proxy forwards /api/*
+ *    to the Vercel dev server so serverless functions work locally.
  *  - `hmr.clientPort: 443` enables HMR through ngrok HTTPS tunnels.
  */
 import { defineConfig, loadEnv } from "vite";
@@ -16,8 +21,7 @@ export default defineConfig(({ mode }) => {
   // Load env vars for the current mode (development/production)
   const env = loadEnv(mode, process.cwd(), "VITE_");
 
-  // Allow all hosts so phones/tablets on the same WiFi can open the dev server
-  // (e.g. http://192.168.x.x:5173 from a mobile device).
+  // Allow all hosts so phones/tablets on the same WiFi can open the dev server.
   // In production there is no Vite dev server, so this only affects local dev.
   const allowedHosts = env.VITE_ALLOWED_HOST
     ? ["localhost", "127.0.0.1", env.VITE_ALLOWED_HOST]
@@ -38,10 +42,11 @@ export default defineConfig(({ mode }) => {
       allowedHosts,
       hmr: hmrConfig,
       proxy: {
-        // During dev, all /api/* requests are forwarded to the backend.
-        // This keeps the frontend origin-agnostic and avoids CORS in dev.
+        // During local dev, all /api/* requests are forwarded to the
+        // Vercel dev server. Run `vercel dev` (default port 3000) in a
+        // separate terminal alongside `npm run dev` (port 5173).
         "/api": {
-          target:       "http://127.0.0.1:8787",
+          target:       "http://127.0.0.1:3000",
           changeOrigin: true,
           secure:       false,
         },
