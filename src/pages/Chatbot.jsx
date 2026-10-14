@@ -31,10 +31,8 @@ function savePrefs(prefs) {
 }
 
 export default function ChatbotPage({ apiBaseUrl }) {
-  // In production: apiBaseUrl = VITE_API_BASE_URL (the Render backend URL).
-  // In development: apiBaseUrl = "" and Vite proxy handles /api/* routes.
-  // NEVER fall back to window.location.origin (Vercel domain) — that would
-  // route API calls to the frontend host instead of the backend.
+  // In production & development: API calls route via Vercel Serverless Functions (/api/*).
+  // Defaults to "" for native relative routing on the same domain.
   const defaultBaseUrl = (apiBaseUrl ?? "").replace(/\/$/, "");
   const [preferences, setPreferences] = useState(() => loadPrefs(defaultBaseUrl));
 
@@ -322,7 +320,7 @@ export default function ChatbotPage({ apiBaseUrl }) {
                 <div className="flex items-center gap-2">
                   <span className="inline-block h-2 w-2 rounded-full bg-amber-400 animate-ping shrink-0" />
                   <span className="text-amber-300 text-[11px] font-medium">
-                    Server is waking up (Render cold start)... Please allow a few seconds.
+                    Connecting to AI service... Please allow a few seconds.
                   </span>
                 </div>
               </div>

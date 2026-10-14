@@ -73,8 +73,8 @@ Set these in **Vercel Dashboard → Project Settings → Environment Variables**
 # 1. Install root & frontend dependencies
 npm install
 
-# 2. Start frontend dev server
-npm run dev:frontend
+# 2. Start dev server
+npm run dev
 
 # 3. Build for production
 npm run build

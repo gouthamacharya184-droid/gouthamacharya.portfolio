@@ -3,10 +3,9 @@
  *
  * Security architecture:
  *  - <PortfolioProvider> wraps the entire app. ALL portfolio content
- *    (profile, projects, skills, etc.) is fetched from the backend API
+ *    (profile, projects, skills, etc.) is fetched from the serverless API (/api/*)
  *    on mount. No content data is hardcoded in any frontend file.
- *  - `apiBaseUrl` is derived from the VITE_API_BASE_URL env var (production)
- *    or left empty (development, where Vite proxy handles /api/*).
+ *  - `apiBaseUrl` defaults to native relative paths ("") for Vercel deployment.
  *
  * Performance notes:
  *  - Noise overlay removed (was causing constant GPU repaints at 5fps).

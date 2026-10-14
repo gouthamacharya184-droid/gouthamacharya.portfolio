@@ -34,7 +34,7 @@ export async function checkChatStatus(baseUrl, timeoutMs = 6000) {
     return 'offline';
   } catch (err) {
     if (err.name === 'AbortError') {
-      return 'warming'; // Timed out waiting for Render free tier spin-up
+      return 'warming'; // Timed out waiting for response
     }
     return 'offline';
   }

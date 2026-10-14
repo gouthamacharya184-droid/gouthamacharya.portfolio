@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# .gitignore — Goutham Portfolio Monorepo
+# .gitignore — Goutham Portfolio (Vercel Full-Stack)
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ── Secrets & Environment Variables ─────────────────────────────────────────
@@ -10,59 +10,26 @@
 .env.*.local
 .env.production
 .env.development
-backend/.env
-frontend/.env
-frontend/.env.local
-frontend/.env.*.local
-frontend/.env.production
-frontend/.env.development
-# frontend/vercel.json must NOT exist — deployment is controlled by root vercel.json only
 .vercel
 .vercel/
 
-# ── Node Modules & Legacy Directories ───────────────────────────────────────────
+# ── Node Modules ────────────────────────────────────────────────────────────
 node_modules/
-backend/node_modules/
-frontend/
 
-
-# ── Build Artifacts ───────────────────────────────────────────────────────────
+# ── Build Artifacts ─────────────────────────────────────────────────────────
 dist/
-frontend/dist/
 build/
 .vite/
 
-# ── Logs & Error Files ────────────────────────────────────────────────────────
-# Log files may contain sensitive internal error messages, stack traces,
-# API keys, or user data. Never commit them.
+# ── Logs & Error Files ──────────────────────────────────────────────────────
 *.log
 *.txt
 logs/
-backend/error_log.txt
-backend/test_output.txt
 
-# ── Debug / Test Scripts ──────────────────────────────────────────────────────
-# One-off debug and test scripts should never be committed to the repository.
-# They may contain hardcoded credentials or expose internal API patterns.
-backend/check_names.js
-backend/debug_list.js
-backend/final_test.js
-backend/find_models.js
-backend/list_models.js
-backend/test_endpoint.js
-backend/test_gemini.js
-backend/test_sdk.js
-backend/test_standard.js
-backend/test_v1.js
-
-# ── Data Dumps & Scratch Files ────────────────────────────────────────────────
-backend/models.json
-backend/models_list.json
-backend/payload.json
-backend/scratch/
+# ── Temporary & Scratch Files ───────────────────────────────────────────────
 scratch/
 
-# ── OS & Editor Files ─────────────────────────────────────────────────────────
+# ── OS & Editor Files ───────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 *.swp
@@ -71,11 +38,6 @@ Thumbs.db
 *.suo
 *.user
 
-# ── ngrok ─────────────────────────────────────────────────────────────────────
-ngrok/
-ngrok.zip
-*.ngrok-free.app
-
-# ── Coverage & Test Output ────────────────────────────────────────────────────
+# ── Coverage & Test Output ──────────────────────────────────────────────────
 coverage/
 .nyc_output/
